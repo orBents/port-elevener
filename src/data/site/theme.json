@@ -1,12 +1,13 @@
 {
-  "type": "theme",
+  "heroImage": "/uploads/logo.jpg",
   "primaryColor": "violet",
-  "secondaryColor": "zinc",
-  "background": "light",
-  "font": "system",
-  "galleryColumns": "2",
-  "coverStyle": "rounded",
   "spacing": "comfortable",
   "footerText": "",
+  "galleryColumns": "4",
+  "background": "light",
+  "font": "system",
+  "secondaryColor": "zinc",
+  "coverStyle": "rounded",
+  "type": "theme",
   "footerLinks": []
 }
