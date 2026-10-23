@@ -1,0 +1,25 @@
+{
+  "name": "enzo-portfolio",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "check": "astro check",
+    "preview": "astro preview",
+    "pages:dev": "npm run build && wrangler pages dev dist"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@tailwindcss/vite": "^4.1.3",
+    "astro": "^5.7.0",
+    "decap-cms-app": "^3.6.0",
+    "tailwindcss": "^4.1.3",
+    "typescript": "^5.8.3",
+    "wrangler": "^4.11.1"
+  }
+}

@@ -1,0 +1,50 @@
+backend:
+  name: github
+  repo: YOUR_GITHUB_OWNER/YOUR_REPOSITORY
+  branch: main
+  # Substitua pelo domínio Pages final, com https:// e sem barra final.
+  base_url: https://YOUR-PAGES-DOMAIN
+  auth_endpoint: api/auth
+  site_domain: YOUR-PAGES-DOMAIN
+  # GitHub OAuth requires `repo` to create commits in a private repository.
+  auth_scope: repo
+
+media_folder: public/uploads
+public_folder: /uploads
+
+collections:
+  - name: projects
+    label: Projetos
+    label_singular: Projeto
+    folder: src/data/projects
+    create: true
+    slug: "{{slug}}"
+    extension: md
+    format: frontmatter
+    fields:
+      - { label: Título, name: title, widget: string }
+      - { label: Slug, name: slug, widget: string, pattern: ["^[a-z0-9]+(?:-[a-z0-9]+)*$", "Use letras minúsculas, números e hífens."] }
+      - label: Categoria
+        name: category
+        widget: select
+        options:
+          - { label: Animação 2D, value: animation }
+          - { label: Storyboard, value: storyboard }
+          - { label: Sketchbook, value: sketchbook }
+          - { label: Ilustração, value: illustration }
+          - { label: Projeto autoral, value: authorial }
+      - { label: Resumo, name: summary, widget: text }
+      - { label: Publicado, name: published, widget: boolean, default: false }
+      - { label: Em destaque, name: featured, widget: boolean, default: false }
+      - { label: Data de publicação, name: publishedAt, widget: datetime, format: "YYYY-MM-DD" }
+      - { label: Imagem de capa, name: cover, widget: image, required: false }
+      - label: Mídias
+        name: media
+        widget: list
+        required: false
+        fields:
+          - { label: Tipo, name: type, widget: select, options: [image, youtube, vimeo] }
+          - { label: Arquivo ou URL, name: source, widget: string }
+          - { label: Texto alternativo, name: alt, widget: string, required: false }
+          - { label: Legenda, name: caption, widget: string, required: false }
+      - { label: Descrição completa, name: body, widget: markdown, required: false }

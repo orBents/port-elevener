@@ -1,0 +1,31 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "Portfólio profissional de artes visuais." } = Astro.props;
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+  <body class="bg-white text-zinc-900 antialiased">
+    <header class="border-b border-zinc-200">
+      <nav class="mx-auto flex max-w-5xl items-center justify-between px-6 py-5" aria-label="Principal">
+        <a class="font-semibold tracking-tight" href="/">Enzo Portfolio</a>
+        <a class="text-sm underline-offset-4 hover:underline focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-4" href="/about">Sobre</a>
+      </nav>
+    </header>
+    <main class="mx-auto max-w-5xl px-6 py-12">
+      <slot />
+    </main>
+  </body>
+</html>
