@@ -1,0 +1,11 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ProjectMedia from "../../components/ProjectMedia.astro";
+export async function getStaticPaths() { const items = await getCollection("projects", ({ data }) => data.published); return items.map((project) => ({ params: { slug: project.data.slug }, props: { project } })); }
+const { project } = Astro.props; const { Content } = await render(project);
+const labels = { animation: "Animação", storyboard: "Storyboard", sketchbook: "Sketchbook", illustration: "Ilustração", authorial: "Projeto autoral" } as const;
+---
+<BaseLayout title={`${project.data.title} | Enzo Portfolio`} description={project.data.summary}>
+  <article class="mx-auto max-w-4xl"><a class="text-sm font-semibold underline" href="/">← Todos os projetos</a><header class="mt-12"><p class="text-xs font-bold uppercase tracking-[.18em] text-violet-700">{labels[project.data.category]}</p><h1 class="mt-3 text-5xl font-semibold tracking-[-.05em]">{project.data.title}</h1><p class="mt-5 max-w-2xl text-lg text-zinc-600">{project.data.summary}</p></header>{project.data.cover && <img class="mt-10 max-h-[70vh] w-full rounded-2xl object-contain" src={project.data.cover} alt={`Capa de ${project.data.title}`} />}{project.body && <div class="prose mt-10 max-w-none"><Content /></div>}{project.data.media.length > 0 && <section class="mt-12 space-y-6" aria-label="Galeria do projeto">{project.data.media.map((media) => <ProjectMedia {...media} />)}</section>}</article>
+</BaseLayout>

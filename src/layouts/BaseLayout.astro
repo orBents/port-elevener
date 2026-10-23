@@ -1,31 +1,12 @@
 ---
+import { getCollection } from "astro:content";
 import "../styles/global.css";
-
-interface Props {
-  title: string;
-  description?: string;
-}
-
+interface Props { title: string; description?: string; }
 const { title, description = "Portfólio profissional de artes visuais." } = Astro.props;
+const entry = (await getCollection("site")).find((item) => item.data.type === "theme");
+const theme = entry?.data.type === "theme" ? entry.data : undefined;
+const palette = { light: "bg-white text-zinc-900", warm: "bg-amber-50 text-stone-900", dark: "bg-zinc-950 text-zinc-100" }[theme?.background ?? "light"];
+const font = { system: "font-sans", serif: "font-serif", mono: "font-mono" }[theme?.font ?? "system"];
 ---
-
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="description" content={description} />
-    <title>{title}</title>
-  </head>
-  <body class="bg-white text-zinc-900 antialiased">
-    <header class="border-b border-zinc-200">
-      <nav class="mx-auto flex max-w-5xl items-center justify-between px-6 py-5" aria-label="Principal">
-        <a class="font-semibold tracking-tight" href="/">Enzo Portfolio</a>
-        <a class="text-sm underline-offset-4 hover:underline focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-4" href="/about">Sobre</a>
-      </nav>
-    </header>
-    <main class="mx-auto max-w-5xl px-6 py-12">
-      <slot />
-    </main>
-  </body>
-</html>
+<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width" /><meta name="description" content={description} /><title>{title}</title></head>
+<body class={`${palette} ${font} antialiased`}><header class="border-b border-zinc-200"><nav class="mx-auto flex max-w-5xl items-center justify-between px-6 py-5" aria-label="Principal"><a class="font-semibold tracking-tight" href="/">Enzo Portfolio</a><a class="text-sm underline-offset-4 hover:underline" href="/about">Sobre</a></nav></header><main class="mx-auto max-w-5xl px-6 py-12"><slot /></main>{theme?.footerText && <footer class="mx-auto max-w-5xl border-t border-zinc-200 px-6 py-8 text-sm text-zinc-500">{theme.footerText}{theme.footerLinks.length > 0 && <ul class="mt-2 flex gap-3">{theme.footerLinks.map((link) => <li><a class="underline" href={link.url}>{link.label}</a></li>)}</ul>}</footer>}</body></html>

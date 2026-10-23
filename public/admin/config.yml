@@ -5,45 +5,75 @@ backend:
   base_url: https://port-elevener.pages.dev
   auth_endpoint: api/auth
   site_domain: port-elevener.pages.dev
-  # GitHub OAuth requires `repo` to create commits in a private repository.
   auth_scope: repo
-
 media_folder: public/uploads
 public_folder: /uploads
-
 collections:
   - name: projects
-    label: Projetos
-    label_singular: Projeto
+    label: Todos os projetos
     folder: src/data/projects
     create: true
     slug: "{{slug}}"
     extension: md
     format: frontmatter
-    fields:
-      - { label: Título, name: title, widget: string }
+    summary: "{{title}} · ordem {{order}}"
+    fields: &project_fields
+      - { label: Título, name: title, widget: string, hint: "Nome público do projeto." }
       - { label: Slug, name: slug, widget: string, pattern: ["^[a-z0-9]+(?:-[a-z0-9]+)*$", "Use letras minúsculas, números e hífens."] }
-      - label: Categoria
-        name: category
-        widget: select
-        options:
-          - { label: Animação 2D, value: animation }
-          - { label: Storyboard, value: storyboard }
-          - { label: Sketchbook, value: sketchbook }
-          - { label: Ilustração, value: illustration }
-          - { label: Projeto autoral, value: authorial }
+      - { label: Categoria, name: category, widget: select, options: [{ label: Animação, value: animation }, { label: Storyboard, value: storyboard }, { label: Sketchbook, value: sketchbook }, { label: Ilustração, value: illustration }, { label: Projeto autoral, value: authorial }] }
       - { label: Resumo, name: summary, widget: text }
+      - { label: Ordem de exibição, name: order, widget: number, value_type: int, min: 0, default: 0, hint: "Menores números aparecem primeiro." }
       - { label: Publicado, name: published, widget: boolean, default: false }
       - { label: Em destaque, name: featured, widget: boolean, default: false }
       - { label: Data de publicação, name: publishedAt, widget: datetime, format: "YYYY-MM-DD" }
-      - { label: Imagem de capa, name: cover, widget: image, required: false }
-      - label: Mídias
+      - { label: Imagem de capa, name: cover, widget: image, required: false, choose_url: false }
+      - label: Galeria e vídeos
         name: media
         widget: list
         required: false
+        summary: "{{fields.type}} · {{fields.caption}}"
+        hint: "Arraste os itens para ordenar. Para vídeo, use uma URL pública do YouTube ou Vimeo."
         fields:
           - { label: Tipo, name: type, widget: select, options: [image, youtube, vimeo] }
           - { label: Arquivo ou URL, name: source, widget: string }
           - { label: Texto alternativo, name: alt, widget: string, required: false }
           - { label: Legenda, name: caption, widget: string, required: false }
       - { label: Descrição completa, name: body, widget: markdown, required: false }
+  - { name: animations, label: Animações, folder: src/data/projects, create: true, slug: "{{slug}}", extension: md, format: frontmatter, filter: { field: category, value: animation }, fields: *project_fields }
+  - { name: storyboards, label: Storyboards, folder: src/data/projects, create: true, slug: "{{slug}}", extension: md, format: frontmatter, filter: { field: category, value: storyboard }, fields: *project_fields }
+  - { name: sketchbooks, label: Sketchbooks, folder: src/data/projects, create: true, slug: "{{slug}}", extension: md, format: frontmatter, filter: { field: category, value: sketchbook }, fields: *project_fields }
+  - { name: illustrations, label: Ilustrações, folder: src/data/projects, create: true, slug: "{{slug}}", extension: md, format: frontmatter, filter: { field: category, value: illustration }, fields: *project_fields }
+  - name: site
+    label: Perfil e aparência
+    files:
+      - name: about
+        label: Página Sobre
+        file: src/data/site/about.md
+        fields:
+          - { name: type, widget: hidden, default: about }
+          - { label: Nome artístico, name: artisticName, widget: string }
+          - { label: Título profissional, name: professionalTitle, widget: string }
+          - { label: Foto de perfil, name: profileImage, widget: image, required: false, choose_url: false }
+          - { label: Biografia curta, name: shortBio, widget: text }
+          - { label: Biografia completa, name: fullBio, widget: markdown, required: false }
+          - { label: Formação e cursos, name: education, widget: list, required: false, fields: [{ label: Curso, name: title, widget: string }, { label: Instituição, name: institution, widget: string, required: false }, { label: Ano, name: year, widget: string, required: false }] }
+          - { label: Experiências e trajetória, name: experience, widget: list, required: false, fields: [{ label: Função ou marco, name: title, widget: string }, { label: Organização, name: organization, widget: string, required: false }, { label: Período, name: period, widget: string, required: false }, { label: Descrição, name: description, widget: text, required: false }] }
+          - { label: Especialidades, name: specialties, widget: list, required: false, field: { label: Competência, name: specialty, widget: string } }
+          - { label: Links e contato, name: links, widget: list, required: false, fields: [{ label: Nome, name: label, widget: string }, { label: URL, name: url, widget: string, pattern: ["^https?://", "Use https://"] }] }
+          - { label: Currículo em PDF, name: resume, widget: file, required: false, choose_url: false }
+          - { label: Seções visíveis, name: sections, widget: object, fields: [{ label: Formação, name: education, widget: boolean, default: true }, { label: Trajetória, name: experience, widget: boolean, default: true }, { label: Especialidades, name: specialties, widget: boolean, default: true }, { label: Links, name: links, widget: boolean, default: true }] }
+      - name: theme
+        label: Aparência do site
+        file: src/data/site/theme.json
+        fields:
+          - { name: type, widget: hidden, default: theme }
+          - { label: Cor principal, name: primaryColor, widget: select, options: [violet, blue, green, orange, rose] }
+          - { label: Cor secundária, name: secondaryColor, widget: select, options: [zinc, slate, stone] }
+          - { label: Fundo, name: background, widget: select, options: [light, warm, dark] }
+          - { label: Tipografia, name: font, widget: select, options: [system, serif, mono] }
+          - { label: Colunas das galerias, name: galleryColumns, widget: select, options: ["2", "3", "4"] }
+          - { label: Estilo das capas, name: coverStyle, widget: select, options: [rounded, square, soft] }
+          - { label: Espaçamento, name: spacing, widget: select, options: [compact, comfortable, generous] }
+          - { label: Imagem de destaque, name: heroImage, widget: image, required: false, choose_url: false }
+          - { label: Texto do rodapé, name: footerText, widget: string, required: false }
+          - { label: Links do rodapé, name: footerLinks, widget: list, required: false, fields: [{ label: Nome, name: label, widget: string }, { label: URL, name: url, widget: string, pattern: ["^https?://", "Use https://"] }] }

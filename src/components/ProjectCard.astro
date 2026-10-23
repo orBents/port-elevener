@@ -1,0 +1,13 @@
+---
+import type { Project } from "../lib/projects";
+interface Props { project: Project; label: string; }
+const { project, label } = Astro.props;
+---
+<a href={`/projects/${project.data.slug}`} class="group block focus-visible:outline-2 focus-visible:outline-offset-4">
+  <article class="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition duration-300 group-hover:-translate-y-1 group-hover:shadow-xl">
+    <div class="aspect-[4/3] overflow-hidden bg-zinc-100">
+      {project.data.cover ? <img src={project.data.cover} alt={`Capa de ${project.data.title}`} loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" /> : <div class="flex h-full items-end bg-gradient-to-br from-zinc-900 via-zinc-700 to-zinc-400 p-6 text-3xl font-semibold text-white">{project.data.title}</div>}
+    </div>
+    <div class="p-5"><p class="text-xs font-semibold uppercase tracking-[.16em] text-violet-700">{label}</p><h2 class="mt-2 text-xl font-semibold tracking-tight">{project.data.title}</h2><p class="mt-2 line-clamp-2 text-sm text-zinc-600">{project.data.summary}</p></div>
+  </article>
+</a>

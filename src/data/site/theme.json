@@ -1,0 +1,12 @@
+{
+  "type": "theme",
+  "primaryColor": "violet",
+  "secondaryColor": "zinc",
+  "background": "light",
+  "font": "system",
+  "galleryColumns": "2",
+  "coverStyle": "rounded",
+  "spacing": "comfortable",
+  "footerText": "",
+  "footerLinks": []
+}

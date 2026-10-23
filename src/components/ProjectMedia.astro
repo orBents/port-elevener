@@ -1,0 +1,11 @@
+---
+interface Props { type: "image" | "youtube" | "vimeo"; source: string; alt?: string; caption?: string; }
+const { type, source, alt = "", caption } = Astro.props;
+const youtube = source.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^?&/]+)/)?.[1];
+const vimeo = source.match(/vimeo\.com\/(\d+)/)?.[1];
+const embed = type === "youtube" && youtube ? `https://www.youtube-nocookie.com/embed/${youtube}` : type === "vimeo" && vimeo ? `https://player.vimeo.com/video/${vimeo}` : undefined;
+---
+<figure class="overflow-hidden rounded-2xl bg-zinc-100">
+  {type === "image" ? <a href={source} target="_blank" rel="noreferrer" aria-label={`Abrir imagem ampliada: ${alt || "obra"}`}><img src={source} alt={alt} loading="lazy" class="h-auto w-full object-contain transition hover:opacity-90" /></a> : embed ? <iframe class="aspect-video w-full" src={embed} title={caption || "Vídeo do projeto"} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe> : <a class="block p-6 underline" href={source} target="_blank" rel="noreferrer">Abrir vídeo</a>}
+  {caption && <figcaption class="px-4 py-3 text-sm text-zinc-600">{caption}</figcaption>}
+</figure>
