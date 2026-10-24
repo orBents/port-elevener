@@ -1,13 +1,18 @@
 {
   "heroImage": "/uploads/logo.jpg",
-  "primaryColor": "violet",
+  "primaryColor": "green",
   "spacing": "comfortable",
-  "footerText": "",
+  "footerText": "Muito Obrigado, volte sempre",
   "galleryColumns": "4",
-  "background": "light",
-  "font": "system",
-  "secondaryColor": "zinc",
-  "coverStyle": "rounded",
+  "background": "dark",
+  "font": "serif",
+  "secondaryColor": "slate",
+  "coverStyle": "soft",
   "type": "theme",
-  "footerLinks": []
+  "footerLinks": [
+    {
+      "label": "Insta",
+      "url": "https://www.instagram.com/elevener.art/"
+    }
+  ]
 }
