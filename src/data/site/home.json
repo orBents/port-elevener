@@ -1,4 +1,15 @@
 {
   "type": "home",
-  "sections": []
+  "sections": [
+    {
+      "type": "video",
+      "visible": true,
+      "alignment": "start",
+      "title": "Animacao Sessao Example text",
+      "eyebrow": "asdasd",
+      "provider": "youtube",
+      "url": "https://youtu.be/T2cnlSkVLrE?si=yXkBQNKCzAah5SOY",
+      "caption": "legenda example c"
+    }
+  ]
 }
