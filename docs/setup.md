@@ -20,4 +20,4 @@ Para testar Functions junto ao build estático, use `npm run pages:dev`; nesse m
 
 Os projetos ficam em `src/data/projects`. Cada arquivo Markdown é validado por `src/content.config.ts` durante o build. A coleção já prevê animação, storyboard, sketchbook, ilustração, projeto autoral, capa e uma lista de mídias.
 
-O arquivo `public/admin/config.yml` contém marcadores que precisam receber o proprietário, repositório e domínio Cloudflare reais antes da primeira autenticação. Para um repositório privado, a POC já usa `auth_scope: repo`, exigido pelo GitHub para criar commits privados.
+O arquivo `public/admin/config.yml` já aponta para o repositório e domínio publicados. Para um repositório privado, ele usa `auth_scope: repo`, exigido pelo GitHub para criar commits privados. Não altere essa configuração ao testar somente o site público localmente.

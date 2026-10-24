@@ -2,7 +2,23 @@
 import { getCollection, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ProjectMedia from "../../components/ProjectMedia.astro";
-export async function getStaticPaths() { const items = await getCollection("projects", ({ data }) => data.published); return items.map((project) => ({ params: { slug: project.data.slug }, props: { project } })); }
-const { project } = Astro.props; const { Content } = await render(project); const labels = { animation: "Animação", storyboard: "Storyboard", sketchbook: "Sketchbook", illustration: "Ilustração", authorial: "Projeto autoral" } as const;
+import { displayCategory, isSafeMediaSource } from "../../lib/content-model";
+
+export async function getStaticPaths() {
+  const items = await getCollection("projects", ({ data }) => data.published);
+  return items.map((project) => ({ params: { slug: project.data.slug }, props: { project } }));
+}
+const { project } = Astro.props;
+const { Content } = await render(project);
+const categories = await getCollection("categories");
+const labels = new Map(categories.map((category) => [category.data.slug, category.data.name]));
 ---
-<BaseLayout title={`${project.data.title} | Enzo Portfolio`} description={project.data.summary} image={project.data.cover}><article class="site-shell py-[var(--layout-section-gap)]"><a class="text-sm font-semibold underline underline-offset-4" href="/#projetos">← Todos os projetos</a><header class="mt-12 max-w-3xl"><p class="site-caption text-xs font-bold uppercase tracking-[.18em]">{labels[project.data.category]}</p><h1 class="site-hero mt-4">{project.data.title}</h1><p class="site-copy mt-6 text-lg leading-relaxed">{project.data.summary}</p></header>{project.data.cover && <div class="mt-12 overflow-hidden" style="border-radius:var(--radius);background:var(--color-surface)"><img class="max-h-[75vh] w-full object-contain" src={project.data.cover} alt={`Capa de ${project.data.title}`} /></div>}{project.body && <div class="prose mt-12 max-w-3xl"><Content /></div>}{project.data.media.length > 0 && <section class="mt-[var(--layout-section-gap)]" aria-label="Galeria do projeto"><div class="site-grid" data-columns="2">{project.data.media.map((media, index) => <ProjectMedia {...media} index={index} />)}</div></section>}</article></BaseLayout>
+<BaseLayout title={`${project.data.title} | Enzo Portfolio`} description={project.data.summary} image={project.data.cover}>
+  <article class="site-shell py-[var(--layout-section-gap)]">
+    <a class="text-sm font-semibold underline underline-offset-4" href="/#projetos">← Todas as obras</a>
+    <header class="mt-12 max-w-3xl"><p class="site-caption text-xs font-bold uppercase tracking-[.18em]">{displayCategory(project.data.category, labels)}</p><h1 class="site-hero mt-4">{project.data.title}</h1><p class="site-copy mt-6 max-w-2xl">{project.data.summary}</p></header>
+    {isSafeMediaSource(project.data.cover) && <div class="mt-12 overflow-hidden" style="border-radius:var(--radius);background:var(--color-surface)"><img class="max-h-[75vh] w-full object-contain" src={project.data.cover} alt={`Capa de ${project.data.title}`} /></div>}
+    {project.body && <div class="prose mt-12 max-w-3xl"><Content /></div>}
+    {project.data.media.length > 0 && <section class="mt-[var(--layout-section-gap)]" aria-label="Galeria do projeto"><div class="site-grid" data-columns="2">{project.data.media.map((media, index) => <ProjectMedia {...media} index={index} />)}</div></section>}
+  </article>
+</BaseLayout>

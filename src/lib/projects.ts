@@ -7,3 +7,8 @@ export async function getPublishedProjects(): Promise<Project[]> {
 
   return projects.sort((left, right) => left.data.order - right.data.order || right.data.publishedAt.getTime() - left.data.publishedAt.getTime());
 }
+
+export async function getVisibleCategories() {
+  const categories = await getCollection("categories", ({ data }) => data.visible);
+  return categories.sort((left, right) => left.data.order - right.data.order || left.data.name.localeCompare(right.data.name, "pt-BR"));
+}

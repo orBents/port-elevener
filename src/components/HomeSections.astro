@@ -1,0 +1,46 @@
+---
+import type { CollectionEntry } from "astro:content";
+import ProjectCard from "./ProjectCard.astro";
+import { displayCategory, embedVideoUrl, isSafeMediaSource, selectBySlug } from "../lib/content-model";
+
+interface Props {
+  sections: any[];
+  projects: CollectionEntry<"projects">[];
+  categories: CollectionEntry<"categories">[];
+}
+const { sections, projects, categories } = Astro.props;
+const visibleSections = sections.filter((section) => section.visible !== false);
+const categoryLabels = new Map(categories.map((category) => [category.data.slug, category.data.name]));
+const selectedCategories = (slugs: string[]) => slugs.length ? categories.filter((category) => slugs.includes(category.data.slug)) : categories;
+---
+{visibleSections.map((section) => {
+  const headingClass = section.alignment === "center" ? "site-section-heading--center" : "";
+  const sectionHeader = () => (section.eyebrow || section.title) && <header class:list={["mb-8", headingClass]}>{section.eyebrow && <p class="site-caption text-xs font-bold uppercase tracking-[.17em]">{section.eyebrow}</p>}{section.title && <h2 class="site-heading mt-2">{section.title}</h2>}</header>;
+  if (section.type === "gallery") {
+    const sectionProjects = projects.filter((project) => !section.categories.length || section.categories.includes(project.data.category)).slice(0, section.limit);
+    return <section class="site-shell site-section" aria-label={section.title || "Galeria de obras"}>{sectionHeader()}{sectionProjects.length ? <div class="site-grid" data-columns="3">{sectionProjects.map((project) => <ProjectCard project={project} label={displayCategory(project.data.category, categoryLabels)} />)}</div> : <div class="site-surface p-8"><p class="site-copy">Nenhuma obra publicada para esta seção.</p></div>}</section>;
+  }
+  if (section.type === "featured") {
+    const selected = section.projects.length ? selectBySlug(projects, section.projects) : projects.filter((project) => project.data.featured).slice(0, section.limit);
+    return <section class="site-shell site-section" aria-label={section.title || "Obras em destaque"}>{sectionHeader()}{selected.length ? <div class="site-grid" data-columns="3">{selected.map((project) => <ProjectCard project={project} label={displayCategory(project.data.category, categoryLabels)} />)}</div> : <div class="site-surface p-8"><p class="site-copy">Selecione obras publicadas para esta seção.</p></div>}</section>;
+  }
+  if (section.type === "categories") {
+    const items = selectedCategories(section.categories);
+    return <section class="site-shell site-section" aria-label={section.title || "Categorias"}>{sectionHeader()}<ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{items.map((category) => <li><a class="site-category-link site-surface block p-5 transition hover:-translate-y-0.5" href={`/#projetos?categoria=${category.data.slug}`}><strong class="site-heading block text-[1.35rem]">{category.data.name}</strong>{category.data.description && <span class="site-copy mt-2 block text-sm">{category.data.description}</span>}</a></li>)}</ul></section>;
+  }
+  if (section.type === "editorial") {
+    return <section class="site-shell site-section" aria-label={section.title || "Texto editorial"}>{sectionHeader()}<div class:list={[section.tone === "surface" && "site-surface p-6 sm:p-10", headingClass]}><p class="site-copy max-w-3xl whitespace-pre-line">{section.content}</p></div></section>;
+  }
+  if (section.type === "image") {
+    return <section class="site-shell site-section" aria-label={section.title || "Imagem"}>{sectionHeader()}{isSafeMediaSource(section.image) ? <figure class="overflow-hidden" style={`border-radius:var(--radius);background:var(--color-surface)`}><img class:list={["w-full", section.fit === "cover" ? "aspect-[16/9] object-cover" : "h-auto object-contain"]} src={section.image} alt={section.alt} loading="lazy" />{section.caption && <figcaption class="site-copy px-4 py-3 text-sm">{section.caption}</figcaption>}</figure> : <div class="site-media-fallback">Imagem indisponível. Atualize esta seção no painel.</div>}</section>;
+  }
+  if (section.type === "video") {
+    const embed = embedVideoUrl(section.provider, section.url);
+    return <section class="site-shell site-section" aria-label={section.title || "Vídeo"}>{sectionHeader()}{embed ? <div class="overflow-hidden" style={`border-radius:var(--radius);background:var(--color-surface);border:var(--border-width) solid var(--color-border)`}><iframe class="aspect-video w-full" src={embed} title={section.caption || section.title || "Vídeo"} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>{section.caption && <p class="site-copy px-4 py-3 text-sm">{section.caption}</p>}</div> : <div class="site-media-fallback">Vídeo indisponível. Atualize esta seção no painel.</div>}</section>;
+  }
+  if (section.type === "cta") {
+    const external = /^https?:\/\//.test(section.buttonUrl);
+    return <section class="site-shell site-section" aria-label={section.title || "Chamada"}><div class:list={["site-surface p-6 sm:p-10", headingClass]}>{section.eyebrow && <p class="site-caption text-xs font-bold uppercase tracking-[.17em]">{section.eyebrow}</p>}{section.title && <h2 class="site-heading mt-2">{section.title}</h2>}<p class="site-copy mt-4 max-w-2xl whitespace-pre-line">{section.content}</p><a class="site-button mt-7" style="background:var(--color-button);color:var(--color-bg)" href={section.buttonUrl} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>{section.buttonLabel}</a></div></section>;
+  }
+  return null;
+})}

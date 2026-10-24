@@ -7,7 +7,7 @@
     "body": { "family": "serif", "size": 18, "weight": 400, "lineHeight": 1.6, "letterSpacing": 0 },
     "caption": { "family": "serif", "size": 13, "weight": 600, "lineHeight": 1.35, "letterSpacing": 0.08 }
   },
-  "layout": { "container": 1280, "columns": 4, "cardGap": 24, "sectionGap": 96, "gutter": 32 },
+  "layout": { "container": 1280, "columns": 4, "mobileColumns": 1, "cardGap": 24, "sectionGap": 96, "gutter": 32, "coverFit": "contain" },
   "components": { "radius": 20, "borderWidth": 1, "shadow": "soft" },
   "aboutLayout": { "contentWidth": 720, "portraitSize": 160 },
   "primaryColor": "green",
@@ -19,5 +19,7 @@
   "spacing": "comfortable",
   "heroImage": "/uploads/logo.jpg",
   "footerText": "Muito Obrigado, volte sempre",
-  "footerLinks": [{ "label": "Insta", "url": "https://www.instagram.com/elevener.art/" }]
+  "footerLinks": [{ "label": "Insta", "url": "https://www.instagram.com/elevener.art/" }],
+  "showContactLink": true,
+  "showFooter": true
 }

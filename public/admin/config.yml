@@ -10,41 +10,153 @@ media_folder: public/uploads
 public_folder: /uploads
 collections:
   - name: projects
-    label: Todos os projetos
+    label: Projetos e galerias
+    label_singular: Projeto
     folder: src/data/projects
     create: true
-    slug: "{{slug}}"
+    delete: true
+    slug: "{{fields.slug}}"
     extension: md
     format: frontmatter
     summary: "{{title}} · ordem {{order}}"
-    fields: &project_fields
-      - { label: Título, name: title, widget: string, hint: "Nome público do projeto." }
-      - { label: Slug, name: slug, widget: string, pattern: ["^[a-z0-9]+(?:-[a-z0-9]+)*$", "Use letras minúsculas, números e hífens."] }
-      - { label: Categoria, name: category, widget: select, options: [{ label: Animação, value: animation }, { label: Storyboard, value: storyboard }, { label: Sketchbook, value: sketchbook }, { label: Ilustração, value: illustration }, { label: Projeto autoral, value: authorial }] }
-      - { label: Resumo, name: summary, widget: text }
-      - { label: Ordem de exibição, name: order, widget: number, value_type: int, min: 0, default: 0, hint: "Menores números aparecem primeiro." }
-      - { label: Publicado, name: published, widget: boolean, default: false }
-      - { label: Em destaque, name: featured, widget: boolean, default: false }
+    sortable_fields: [order, title, publishedAt]
+    fields:
+      - { label: Título da obra, name: title, widget: string, hint: "Nome público do projeto." }
+      - { label: Endereço da obra, name: slug, widget: string, pattern: ["^[a-z0-9]+(?:-[a-z0-9]+)*$", "Use letras minúsculas, números e hífens."], hint: "Não altere depois de publicar: o endereço público será atualizado." }
+      - { label: Categoria, name: category, widget: relation, collection: categories, search_fields: [name, slug], value_field: slug, display_fields: [name], required: true, hint: "Gerencie as opções em Categorias." }
+      - { label: Resumo, name: summary, widget: text, hint: "Breve apresentação exibida no cartão da obra." }
+      - { label: Ordem de exibição, name: order, widget: number, value_type: int, min: 0, default: 0, hint: "Números menores aparecem primeiro." }
+      - { label: Publicar no site, name: published, widget: boolean, default: false, hint: "Desative para manter a obra salva, mas fora do site público." }
+      - { label: Destacar obra, name: featured, widget: boolean, default: false, hint: "Disponibiliza a obra para uma seção de destaques configurada na página inicial." }
       - { label: Data de publicação, name: publishedAt, widget: datetime, format: "YYYY-MM-DD" }
-      - { label: Imagem de capa, name: cover, widget: image, required: false, choose_url: false }
+      - { label: Imagem de capa, name: cover, widget: image, required: false, choose_url: false, hint: "Envie uma imagem. A proporção original é preservada, salvo se o recorte for ativado em Personalizar layout." }
       - label: Galeria e vídeos
         name: media
         widget: list
         required: false
-        summary: "{{fields.type}} · {{fields.caption}}"
-        hint: "Arraste os itens para ordenar. Para vídeo, use uma URL pública do YouTube ou Vimeo."
-        fields:
-          - { label: Tipo, name: type, widget: select, options: [image, youtube, vimeo] }
-          - { label: Arquivo ou URL, name: source, widget: string }
-          - { label: Texto alternativo, name: alt, widget: string, required: false }
-          - { label: Legenda, name: caption, widget: string, required: false }
+        summary: "{{fields.type}}"
+        hint: "Arraste os itens para reordenar. Remover um item daqui não remove o arquivo enviado."
+        types:
+          - label: Imagem
+            name: image
+            fields:
+              - { label: Arquivo de imagem, name: source, widget: image, choose_url: false, hint: "Envie ou escolha uma imagem." }
+              - { label: Texto alternativo, name: alt, widget: string, required: false, hint: "Descreva a imagem para leitores de tela." }
+              - { label: Legenda, name: caption, widget: string, required: false }
+          - label: Vídeo do YouTube
+            name: youtube
+            fields:
+              - { label: URL do YouTube, name: source, widget: string, pattern: ["^https?://(?:www\\.)?(youtube\\.com|youtu\\.be)/", "Use uma URL pública do YouTube." ] }
+              - { label: Legenda, name: caption, widget: string, required: false }
+          - label: Vídeo do Vimeo
+            name: vimeo
+            fields:
+              - { label: URL do Vimeo, name: source, widget: string, pattern: ["^https?://(?:www\\.)?vimeo\\.com/", "Use uma URL pública do Vimeo." ] }
+              - { label: Legenda, name: caption, widget: string, required: false }
       - { label: Descrição completa, name: body, widget: markdown, required: false }
-  - { name: animations, label: Animações, folder: src/data/projects, create: true, slug: "{{slug}}", extension: md, format: frontmatter, filter: { field: category, value: animation }, fields: *project_fields }
-  - { name: storyboards, label: Storyboards, folder: src/data/projects, create: true, slug: "{{slug}}", extension: md, format: frontmatter, filter: { field: category, value: storyboard }, fields: *project_fields }
-  - { name: sketchbooks, label: Sketchbooks, folder: src/data/projects, create: true, slug: "{{slug}}", extension: md, format: frontmatter, filter: { field: category, value: sketchbook }, fields: *project_fields }
-  - { name: illustrations, label: Ilustrações, folder: src/data/projects, create: true, slug: "{{slug}}", extension: md, format: frontmatter, filter: { field: category, value: illustration }, fields: *project_fields }
-  - name: site
-    label: Perfil e aparência
+
+  - name: categories
+    label: Categorias
+    label_singular: Categoria
+    folder: src/data/categories
+    create: true
+    delete: true
+    slug: "{{fields.slug}}"
+    extension: json
+    format: json
+    summary: "{{name}} · ordem {{order}}"
+    sortable_fields: [order, name]
+    fields:
+      - { label: Nome, name: name, widget: string, hint: "Nome visível para visitantes." }
+      - { label: Identificador, name: slug, widget: string, pattern: ["^[a-z0-9]+(?:-[a-z0-9]+)*$", "Use letras minúsculas, números e hífens."], hint: "Não altere se já houver obras usando esta categoria." }
+      - { label: Descrição curta, name: description, widget: text, required: false }
+      - { label: Ordem, name: order, widget: number, value_type: int, min: 0, default: 0 }
+      - { label: Exibir nos filtros, name: visible, widget: boolean, default: true, hint: "Ocultar não apaga obras vinculadas." }
+
+  - name: home
+    label: Organizar página inicial
+    files:
+      - name: home
+        label: Seções da página inicial
+        file: src/data/site/home.json
+        fields:
+          - { name: type, widget: hidden, default: home }
+          - label: Seções depois da galeria principal
+            name: sections
+            widget: list
+            required: false
+            summary: "{{fields.type}} · {{fields.title}}"
+            hint: "Arraste para mudar a ordem. Remover uma seção não exclui obras, imagens nem vídeos vinculados."
+            types:
+              - label: Galeria de artes
+                name: gallery
+                fields: &section_common
+                  - { label: Visível, name: visible, widget: boolean, default: true }
+                  - { label: Título, name: title, widget: string, required: false }
+                  - { label: Texto acima do título, name: eyebrow, widget: string, required: false }
+                  - { label: Alinhamento, name: alignment, widget: select, options: [start, center], default: start }
+                  - { label: Categorias, name: categories, widget: relation, collection: categories, search_fields: [name, slug], value_field: slug, display_fields: [name], multiple: true, required: false, hint: "Vazio mostra todas as categorias." }
+                  - { label: Máximo de obras, name: limit, widget: number, value_type: int, min: 1, max: 24, default: 8 }
+              - label: Projetos destacados
+                name: featured
+                fields:
+                  - { label: Visível, name: visible, widget: boolean, default: true }
+                  - { label: Título, name: title, widget: string, required: false }
+                  - { label: Texto acima do título, name: eyebrow, widget: string, required: false }
+                  - { label: Alinhamento, name: alignment, widget: select, options: [start, center], default: start }
+                  - { label: Obras selecionadas, name: projects, widget: relation, collection: projects, search_fields: [title, slug], value_field: slug, display_fields: [title], multiple: true, required: false, hint: "Vazio usa as obras marcadas como destaque." }
+                  - { label: Máximo de obras, name: limit, widget: number, value_type: int, min: 1, max: 12, default: 4 }
+              - label: Lista de categorias
+                name: categories
+                fields:
+                  - { label: Visível, name: visible, widget: boolean, default: true }
+                  - { label: Título, name: title, widget: string, required: false }
+                  - { label: Texto acima do título, name: eyebrow, widget: string, required: false }
+                  - { label: Alinhamento, name: alignment, widget: select, options: [start, center], default: start }
+                  - { label: Categorias, name: categories, widget: relation, collection: categories, search_fields: [name, slug], value_field: slug, display_fields: [name], multiple: true, required: false, hint: "Vazio mostra todas as categorias visíveis." }
+              - label: Texto editorial
+                name: editorial
+                fields:
+                  - { label: Visível, name: visible, widget: boolean, default: true }
+                  - { label: Título, name: title, widget: string, required: false }
+                  - { label: Texto acima do título, name: eyebrow, widget: string, required: false }
+                  - { label: Alinhamento, name: alignment, widget: select, options: [start, center], default: start }
+                  - { label: Texto, name: content, widget: text }
+                  - { label: Fundo, name: tone, widget: select, options: [plain, surface], default: plain }
+              - label: Imagem
+                name: image
+                fields:
+                  - { label: Visível, name: visible, widget: boolean, default: true }
+                  - { label: Título, name: title, widget: string, required: false }
+                  - { label: Texto acima do título, name: eyebrow, widget: string, required: false }
+                  - { label: Alinhamento, name: alignment, widget: select, options: [start, center], default: start }
+                  - { label: Imagem, name: image, widget: image, choose_url: false }
+                  - { label: Texto alternativo, name: alt, widget: string }
+                  - { label: Legenda, name: caption, widget: string, required: false }
+                  - { label: Ajuste da imagem, name: fit, widget: select, options: [contain, cover], default: contain }
+              - label: Vídeo
+                name: video
+                fields:
+                  - { label: Visível, name: visible, widget: boolean, default: true }
+                  - { label: Título, name: title, widget: string, required: false }
+                  - { label: Texto acima do título, name: eyebrow, widget: string, required: false }
+                  - { label: Alinhamento, name: alignment, widget: select, options: [start, center], default: start }
+                  - { label: Plataforma, name: provider, widget: select, options: [youtube, vimeo] }
+                  - { label: URL do vídeo, name: url, widget: string, pattern: ["^https?://", "Use uma URL pública." ] }
+                  - { label: Legenda, name: caption, widget: string, required: false }
+              - label: Chamada para ação
+                name: cta
+                fields:
+                  - { label: Visível, name: visible, widget: boolean, default: true }
+                  - { label: Título, name: title, widget: string, required: false }
+                  - { label: Texto acima do título, name: eyebrow, widget: string, required: false }
+                  - { label: Alinhamento, name: alignment, widget: select, options: [start, center], default: start }
+                  - { label: Texto, name: content, widget: text }
+                  - { label: Texto do botão, name: buttonLabel, widget: string }
+                  - { label: Link do botão, name: buttonUrl, widget: string, pattern: ["^(?:/|https?://)", "Use um link interno iniciado por / ou uma URL https://." ] }
+
+  - name: about
+    label: Sobre o artista
     files:
       - name: about
         label: Página Sobre
@@ -55,22 +167,26 @@ collections:
           - { label: Título profissional, name: professionalTitle, widget: string }
           - { label: Foto de perfil, name: profileImage, widget: image, required: false, choose_url: false }
           - { label: Biografia curta, name: shortBio, widget: text }
-          - { label: Biografia completa, name: fullBio, widget: markdown, required: false }
+          - { label: Biografia completa, name: fullBio, widget: text, required: false, hint: "Texto corrido. A quebra de linha é preservada na página Sobre." }
           - { label: Formação e cursos, name: education, widget: list, required: false, fields: [{ label: Curso, name: title, widget: string }, { label: Instituição, name: institution, widget: string, required: false }, { label: Ano, name: year, widget: string, required: false }] }
           - { label: Experiências e trajetória, name: experience, widget: list, required: false, fields: [{ label: Função ou marco, name: title, widget: string }, { label: Organização, name: organization, widget: string, required: false }, { label: Período, name: period, widget: string, required: false }, { label: Descrição, name: description, widget: text, required: false }] }
           - { label: Especialidades, name: specialties, widget: list, required: false, field: { label: Competência, name: specialty, widget: string } }
           - { label: Links e contato, name: links, widget: list, required: false, fields: [{ label: Nome, name: label, widget: string }, { label: URL, name: url, widget: string, pattern: ["^https?://", "Use https://"] }] }
           - { label: Currículo em PDF, name: resume, widget: file, required: false, choose_url: false }
           - { label: Seções visíveis, name: sections, widget: object, fields: [{ label: Formação, name: education, widget: boolean, default: true }, { label: Trajetória, name: experience, widget: boolean, default: true }, { label: Especialidades, name: specialties, widget: boolean, default: true }, { label: Links, name: links, widget: boolean, default: true }] }
-      - name: theme
-        label: Aparência do site
+
+  - name: appearance
+    label: Personalizar layout
+    files:
+      - name: appearance
+        label: Aparência e layout
         file: src/data/site/theme.json
         fields:
           - { name: type, widget: hidden, default: theme }
-          - label: Cores HEX
+          - label: Cores e identidade visual
             name: colors
             widget: object
-            hint: "Escolha no seletor ou digite #RRGGBB. Combinações sem contraste mínimo são recusadas."
+            hint: "Escolha no seletor ou digite #RRGGBB. Combinações sem contraste mínimo são recusadas no salvamento."
             fields:
               - { label: Fundo, name: background, widget: color, allowInput: true }
               - { label: Superfície, name: surface, widget: color, allowInput: true }
@@ -81,23 +197,18 @@ collections:
               - { label: Bordas, name: border, widget: color, allowInput: true }
               - { label: Botões, name: button, widget: color, allowInput: true }
               - { label: Destaques, name: accent, widget: color, allowInput: true }
-          - { label: Layout, name: layout, widget: object, fields: [{ label: Largura máxima, name: container, widget: number, min: 960, max: 1600 }, { label: Colunas, name: columns, widget: number, min: 2, max: 4 }, { label: Espaço entre cards, name: cardGap, widget: number, min: 12, max: 48 }, { label: Espaço entre seções, name: sectionGap, widget: number, min: 48, max: 160 }, { label: Margem lateral, name: gutter, widget: number, min: 16, max: 64 }] }
-          - { label: Componentes, name: components, widget: object, fields: [{ label: Raio, name: radius, widget: number, min: 0, max: 40 }, { label: Borda, name: borderWidth, widget: number, min: 0, max: 3 }, { label: Sombra, name: shadow, widget: select, options: [none, soft, strong] }] }
           - label: Tipografia
             name: typography
             widget: object
             fields:
-              - { label: Hero, name: hero, widget: object, fields: [{ label: Família, name: family, widget: select, options: [sans, serif, mono] }, { label: Tamanho, name: size, widget: number, min: 24, max: 112 }, { label: Peso, name: weight, widget: number, min: 300, max: 800 }, { label: Entrelinha, name: lineHeight, widget: number, min: 0.9, max: 2, value_type: float }, { label: Letter spacing, name: letterSpacing, widget: number, min: -0.1, max: 0.2, value_type: float }] }
-              - { label: Títulos de seção, name: section, widget: object, fields: [{ label: Família, name: family, widget: select, options: [sans, serif, mono] }, { label: Tamanho, name: size, widget: number, min: 20, max: 72 }, { label: Peso, name: weight, widget: number, min: 300, max: 800 }, { label: Entrelinha, name: lineHeight, widget: number, min: 0.9, max: 2, value_type: float }, { label: Letter spacing, name: letterSpacing, widget: number, min: -0.1, max: 0.2, value_type: float }] }
-              - { label: Corpo, name: body, widget: object, fields: [{ label: Família, name: family, widget: select, options: [sans, serif, mono] }, { label: Tamanho, name: size, widget: number, min: 14, max: 28 }, { label: Peso, name: weight, widget: number, min: 300, max: 800 }, { label: Entrelinha, name: lineHeight, widget: number, min: 1, max: 2, value_type: float }, { label: Letter spacing, name: letterSpacing, widget: number, min: -0.1, max: 0.2, value_type: float }] }
-              - { label: Legendas, name: caption, widget: object, fields: [{ label: Família, name: family, widget: select, options: [sans, serif, mono] }, { label: Tamanho, name: size, widget: number, min: 12, max: 20 }, { label: Peso, name: weight, widget: number, min: 300, max: 800 }, { label: Entrelinha, name: lineHeight, widget: number, min: 1, max: 2, value_type: float }, { label: Letter spacing, name: letterSpacing, widget: number, min: -0.1, max: 0.2, value_type: float }] }
-          - { label: Cor principal, name: primaryColor, widget: select, options: [violet, blue, green, orange, rose] }
-          - { label: Cor secundária, name: secondaryColor, widget: select, options: [zinc, slate, stone] }
-          - { label: Fundo, name: background, widget: select, options: [light, warm, dark] }
-          - { label: Tipografia, name: font, widget: select, options: [system, serif, mono] }
-          - { label: Colunas das galerias, name: galleryColumns, widget: select, options: ["2", "3", "4"] }
-          - { label: Estilo das capas, name: coverStyle, widget: select, options: [rounded, square, soft] }
-          - { label: Espaçamento, name: spacing, widget: select, options: [compact, comfortable, generous] }
-          - { label: Imagem de destaque, name: heroImage, widget: image, required: false, choose_url: false }
+              - { label: Títulos de projetos, name: hero, widget: object, fields: [{ label: Família, name: family, widget: select, options: [sans, serif, mono] }, { label: Tamanho, name: size, widget: number, min: 24, max: 112 }, { label: Peso, name: weight, widget: number, min: 300, max: 800 }, { label: Entrelinha, name: lineHeight, widget: number, min: 0.9, max: 2, value_type: float }, { label: Espaçamento entre letras, name: letterSpacing, widget: number, min: -0.1, max: 0.2, value_type: float }] }
+              - { label: Títulos de seção, name: section, widget: object, fields: [{ label: Família, name: family, widget: select, options: [sans, serif, mono] }, { label: Tamanho, name: size, widget: number, min: 20, max: 72 }, { label: Peso, name: weight, widget: number, min: 300, max: 800 }, { label: Entrelinha, name: lineHeight, widget: number, min: 0.9, max: 2, value_type: float }, { label: Espaçamento entre letras, name: letterSpacing, widget: number, min: -0.1, max: 0.2, value_type: float }] }
+              - { label: Texto corrido, name: body, widget: object, fields: [{ label: Família, name: family, widget: select, options: [sans, serif, mono] }, { label: Tamanho, name: size, widget: number, min: 14, max: 28 }, { label: Peso, name: weight, widget: number, min: 300, max: 800 }, { label: Entrelinha, name: lineHeight, widget: number, min: 1, max: 2, value_type: float }, { label: Espaçamento entre letras, name: letterSpacing, widget: number, min: -0.1, max: 0.2, value_type: float }] }
+              - { label: Legendas, name: caption, widget: object, fields: [{ label: Família, name: family, widget: select, options: [sans, serif, mono] }, { label: Tamanho, name: size, widget: number, min: 12, max: 20 }, { label: Peso, name: weight, widget: number, min: 300, max: 800 }, { label: Entrelinha, name: lineHeight, widget: number, min: 1, max: 2, value_type: float }, { label: Espaçamento entre letras, name: letterSpacing, widget: number, min: -0.1, max: 0.2, value_type: float }] }
+          - { label: Layout, name: layout, widget: object, fields: [{ label: Largura máxima, name: container, widget: number, min: 960, max: 1600 }, { label: Colunas no desktop, name: columns, widget: number, min: 2, max: 4 }, { label: Colunas no celular, name: mobileColumns, widget: number, min: 1, max: 2 }, { label: Espaço entre cards, name: cardGap, widget: number, min: 12, max: 48 }, { label: Espaço entre seções, name: sectionGap, widget: number, min: 48, max: 160 }, { label: Margem lateral, name: gutter, widget: number, min: 16, max: 64 }, { label: Imagens das capas, name: coverFit, widget: select, options: [{ label: Preservar proporção, value: contain }, { label: Recortar para preencher, value: cover }] }] }
+          - { label: Componentes, name: components, widget: object, fields: [{ label: Raio dos cantos, name: radius, widget: number, min: 0, max: 40 }, { label: Espessura das bordas, name: borderWidth, widget: number, min: 0, max: 3 }, { label: Sombra, name: shadow, widget: select, options: [none, soft, strong] }] }
+          - { label: Página Sobre, name: aboutLayout, widget: object, fields: [{ label: Largura do texto, name: contentWidth, widget: number, min: 560, max: 960 }, { label: Tamanho do retrato, name: portraitSize, widget: number, min: 96, max: 320 }] }
+          - { label: Mostrar link de contato no topo, name: showContactLink, widget: boolean, default: true }
+          - { label: Mostrar rodapé, name: showFooter, widget: boolean, default: true }
           - { label: Texto do rodapé, name: footerText, widget: string, required: false }
           - { label: Links do rodapé, name: footerLinks, widget: list, required: false, fields: [{ label: Nome, name: label, widget: string }, { label: URL, name: url, widget: string, pattern: ["^https?://", "Use https://"] }] }

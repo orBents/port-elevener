@@ -1,24 +1,56 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import HomeSections from "../components/HomeSections.astro";
 import ProjectCard from "../components/ProjectCard.astro";
-import { getPublishedProjects } from "../lib/projects";
-const projects = await getPublishedProjects(); const site = await getCollection("site"); const about = site.find((entry) => entry.data.type === "about"); const theme = site.find((entry) => entry.data.type === "theme");
-if (!about || about.data.type !== "about") throw new Error("Perfil não encontrado."); const profile = about.data; const settings = theme?.data.type === "theme" ? theme.data : undefined;
-const labels = { animation: "Animações", storyboard: "Storyboards", sketchbook: "Sketchbooks", illustration: "Ilustrações", authorial: "Autorais" } as const;
-const featured = projects.filter((project) => project.data.featured); const remaining = projects.filter((project) => !project.data.featured); const columns = String(settings?.layout.columns ?? 3);
+import { getPublishedProjects, getVisibleCategories } from "../lib/projects";
+import { displayCategory, missingCategoryReferences } from "../lib/content-model";
+
+const projects = await getPublishedProjects();
+const categories = await getVisibleCategories();
+const site = await getCollection("site");
+const about = site.find((entry) => entry.data.type === "about");
+const home = site.find((entry) => entry.data.type === "home");
+const theme = site.find((entry) => entry.data.type === "theme");
+if (!about || about.data.type !== "about") throw new Error("Perfil não encontrado.");
+const profile = about.data;
+const settings = theme?.data.type === "theme" ? theme.data : undefined;
+const configuredSections = home?.data.type === "home" ? home.data.sections : [];
+const categoryLabels = new Map(categories.map((category) => [category.data.slug, category.data.name]));
+const columns = String(settings?.layout.columns ?? 3);
+const missingCategories = missingCategoryReferences(projects, categories);
+if (missingCategories.length) throw new Error(`Categorias ausentes para obras publicadas: ${missingCategories.join(", ")}. Crie ou restaure a categoria no painel.`);
 ---
-<BaseLayout title={`${profile.artisticName} — ${profile.professionalTitle}`} description={profile.shortBio} image={settings?.heroImage}>
-  <section class="site-shell grid min-h-[72vh] items-end gap-8 py-[var(--layout-section-gap)] lg:grid-cols-[.85fr_1.15fr]" aria-labelledby="hero-title">
-    <div class="pb-2"><p class="site-caption text-xs font-bold uppercase tracking-[.2em]">{profile.professionalTitle}</p><h1 id="hero-title" class="site-hero mt-5">{profile.artisticName}</h1><p class="site-copy mt-7 max-w-lg text-lg leading-relaxed">{profile.shortBio}</p><div class="mt-9 flex flex-wrap gap-3"><a class="site-button" style="background:var(--color-button);color:var(--color-bg)" href="#projetos">Explorar obras</a><a class="site-button" style="border:var(--border-width) solid var(--color-border)" href="/about">Sobre o artista</a></div></div>
-    <div class="overflow-hidden" style="border-radius:calc(var(--radius) * 1.5);background:var(--color-surface)">{settings?.heroImage ? <img src={settings.heroImage} alt="Imagem de destaque do portfólio" class="aspect-[16/10] h-full w-full object-cover" /> : <div class="aspect-[16/10] bg-[radial-gradient(circle_at_18%_20%,var(--color-accent),transparent_33%),radial-gradient(circle_at_80%_70%,var(--color-link),transparent_36%),var(--color-button)]" aria-hidden="true"></div>}</div>
+<BaseLayout title={`${profile.artisticName} — ${profile.professionalTitle}`} description={profile.shortBio}>
+  <section id="projetos" class="site-shell site-section" aria-labelledby="projects-title">
+    <div class="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+      <div>
+        <p class="site-caption text-xs font-bold uppercase tracking-[.17em]">Portfólio</p>
+        <h1 id="projects-title" class="site-heading mt-2">Obras</h1>
+      </div>
+      {categories.length > 0 && <div class="flex flex-wrap gap-2" role="toolbar" aria-label="Filtrar obras por categoria"><button class="site-filter" type="button" data-filter="all" aria-pressed="true">Todas</button>{categories.map((category) => <button class="site-filter" type="button" data-filter={category.data.slug} aria-pressed="false">{category.data.name}</button>)}</div>}
+    </div>
+    {projects.length ? <div id="project-grid" class="site-grid mt-10" data-columns={columns}>{projects.map((project) => <ProjectCard project={project} label={displayCategory(project.data.category, categoryLabels)} />)}</div> : <div class="site-surface mt-8 p-10"><p class="site-copy">As obras publicadas aparecerão aqui.</p></div>}
+    <p id="filter-empty" class="site-copy mt-8" role="status" hidden>Nenhuma obra publicada nesta categoria.</p>
   </section>
-  {featured.length > 0 && <section class="site-shell site-section" aria-labelledby="featured-title"><div class="mb-8 flex items-end justify-between gap-4"><div><p class="site-caption text-xs font-bold uppercase tracking-[.17em]">Curadoria</p><h2 id="featured-title" class="site-heading mt-2 text-4xl font-semibold">Destaques</h2></div><span class="site-copy text-sm">Trabalhos selecionados</span></div><div class="grid gap-[var(--layout-card-gap)] lg:grid-cols-2">{featured.map((project) => <ProjectCard project={project} label={labels[project.data.category]} featured />)}</div></section>}
-  <section id="projetos" class="site-shell site-section" aria-labelledby="projects-title"><div class="flex flex-col justify-between gap-6 sm:flex-row sm:items-end"><div><p class="site-caption text-xs font-bold uppercase tracking-[.17em]">Arquivo</p><h2 id="projects-title" class="site-heading mt-2 text-4xl font-semibold">Todos os projetos</h2></div><div class="flex flex-wrap gap-2" role="toolbar" aria-label="Filtrar projetos"><button class="site-filter" type="button" data-filter="all" aria-pressed="true">Todos</button>{Object.entries(labels).slice(0,4).map(([key,label]) => <button class="site-filter" type="button" data-filter={key} aria-pressed="false">{label}</button>)}</div></div>{remaining.length === 0 && featured.length === 0 ? <div class="site-surface mt-8 p-10"><p class="site-copy">Novos trabalhos aparecerão aqui em breve.</p></div> : <div id="project-grid" class="site-grid mt-10" data-columns={columns}>{remaining.map((project) => <ProjectCard project={project} label={labels[project.data.category]} />)}</div>}</section>
-  <p id="filter-empty" class="site-shell site-copy pb-[var(--layout-section-gap)]" role="status" hidden>Nenhum projeto nesta categoria.</p>
+
+  <HomeSections sections={configuredSections} projects={projects} categories={categories} />
+
+  <section class="site-shell pb-[var(--layout-section-gap)]" aria-label="Conheça o artista">
+    <div class="border-t pt-8" style="border-color:var(--color-border)"><a class="site-copy inline-flex items-center gap-2 font-semibold underline underline-offset-4" href="/about">Conheça o artista <span aria-hidden="true">→</span></a></div>
+  </section>
 </BaseLayout>
 <script>
-  const controls = document.querySelectorAll<HTMLButtonElement>("[data-filter]"); const cards = document.querySelectorAll<HTMLElement>(".project-card");
+  const controls = [...document.querySelectorAll<HTMLButtonElement>("[data-filter]")];
+  const cards = [...document.querySelectorAll<HTMLElement>(".project-card")];
   const emptyState = document.querySelector<HTMLElement>("#filter-empty");
-  controls.forEach((control) => control.addEventListener("click", () => { const filter = control.dataset.filter; controls.forEach((item) => item.setAttribute("aria-pressed", String(item === control))); cards.forEach((card) => { card.hidden = filter !== "all" && card.dataset.category !== filter; }); const visibleCards = [...cards].some((card) => !card.hidden); if (emptyState) emptyState.hidden = !filter || filter === "all" || visibleCards; }));
+  const applyFilter = (filter: string) => {
+    controls.forEach((control) => control.setAttribute("aria-pressed", String(control.dataset.filter === filter)));
+    cards.forEach((card) => { card.hidden = filter !== "all" && card.dataset.category !== filter; });
+    const visibleCards = cards.some((card) => !card.hidden);
+    if (emptyState) emptyState.hidden = filter === "all" || visibleCards;
+  };
+  controls.forEach((control) => control.addEventListener("click", () => applyFilter(control.dataset.filter || "all")));
+  const requestedCategory = new URLSearchParams(window.location.search).get("categoria");
+  if (requestedCategory && controls.some((control) => control.dataset.filter === requestedCategory)) applyFilter(requestedCategory);
 </script>

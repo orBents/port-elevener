@@ -21,6 +21,7 @@ const serializedTheme = JSON.stringify(themeData).replace(/</g, "\\u003c");
       import CMS from "decap-cms-app";
       import previewCss from "../styles/decap-preview.css?raw";
       import { contrastMessage, defaultColors, defaultComponents, defaultLayout, defaultTypography, hexPattern, typographyStyle } from "../lib/design-system";
+      import { embedVideoUrl, isSafeMediaSource } from "../lib/content-model";
 
       const cms: any = CMS;
       const h = React.createElement;
@@ -36,15 +37,11 @@ const serializedTheme = JSON.stringify(themeData).replace(/</g, "\\u003c");
       };
       const imageAsset = (getAsset, source) => source ? getAsset(source) : undefined;
       const stripMarkdown = (content = "") => String(content).replace(/[#*_`>[\]]/g, "").replace(/\n{3,}/g, "\n\n");
-      const videoEmbed = (type, source) => {
-        const youtube = String(source || "").match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^?&/]+)/)?.[1];
-        const vimeo = String(source || "").match(/vimeo\.com\/(\d+)/)?.[1];
-        return type === "youtube" && youtube ? `https://www.youtube-nocookie.com/embed/${youtube}` : type === "vimeo" && vimeo ? `https://player.vimeo.com/video/${vimeo}` : undefined;
-      };
+      const videoEmbed = (type, source) => type === "youtube" || type === "vimeo" ? embedVideoUrl(type, source) : undefined;
       const themeValues = (theme = {}) => ({
         colors: { ...defaultColors, ...(theme.colors || {}) },
         typography: { ...defaultTypography, ...(theme.typography || {}) },
-        layout: { ...defaultLayout, ...(theme.layout || {}) },
+        layout: { ...defaultLayout, mobileColumns: 1, coverFit: "contain", ...(theme.layout || {}) },
         components: { ...defaultComponents, ...(theme.components || {}) },
         aboutLayout: { contentWidth: 720, portraitSize: 160, ...(theme.aboutLayout || {}) },
       });
@@ -61,7 +58,7 @@ const serializedTheme = JSON.stringify(themeData).replace(/</g, "\\u003c");
           "--color-border": theme.colors.border, "--color-button": theme.colors.button, "--color-accent": theme.colors.accent,
           "--layout-container": `${theme.layout.container}px`, "--layout-gutter": `${theme.layout.gutter}px`,
           "--layout-section-gap": `${theme.layout.sectionGap}px`, "--layout-card-gap": `${theme.layout.cardGap}px`,
-          "--preview-columns": theme.layout.columns, "--radius": `${theme.components.radius}px`, "--border-width": `${theme.components.borderWidth}px`,
+          "--preview-columns": theme.layout.columns, "--preview-mobile-columns": theme.layout.mobileColumns, "--radius": `${theme.components.radius}px`, "--border-width": `${theme.components.borderWidth}px`,
           "--shadow": shadow, "--font-hero": hero.family, "--font-section": section.family, "--font-body": body.family, "--font-caption": caption.family,
           "--size-hero": hero.size, "--leading-hero": hero.lineHeight, "--tracking-hero": hero.tracking, "--size-section": section.size,
           "--leading-section": section.lineHeight, "--tracking-section": section.tracking, "--size-body": body.size, "--leading-body": body.lineHeight,
@@ -71,7 +68,7 @@ const serializedTheme = JSON.stringify(themeData).replace(/</g, "\\u003c");
       };
       const mediaPreview = (getAsset, item, title) => {
         if (!item?.source) return h("div", { className: "enzo-preview__empty", "aria-label": "Mídia ainda não definida" }, "Adicione uma mídia");
-        if (item.type === "image" || !item.type) return h("img", { src: imageAsset(getAsset, item.source), alt: item.alt || title || "" });
+        if (item.type === "image" || !item.type) return isSafeMediaSource(item.source) ? h("img", { src: imageAsset(getAsset, item.source), alt: item.alt || title || "" }) : h("div", { className: "enzo-preview__empty" }, "Imagem indisponível");
         const embed = videoEmbed(item.type, item.source);
         return embed ? h("iframe", { className: "enzo-preview__video", src: embed, title: item.caption || `Vídeo: ${title}`, loading: "lazy" }) : h("a", { className: "enzo-preview__video-link", href: item.source, target: "_blank", rel: "noreferrer" }, "Abrir vídeo em nova aba");
       };
@@ -128,12 +125,24 @@ const serializedTheme = JSON.stringify(themeData).replace(/</g, "\\u003c");
         }
       });
 
+      const samplePreviewCard = (index) => h("article", { className: "enzo-preview__card", key: index }, h("div", { className: "enzo-preview__empty" }, "Obra"), h("p", { className: "enzo-preview__caption" }, "Ilustração"), h("h3", { className: "enzo-preview__section-title" }, "Projeto em destaque"), h("p", { className: "enzo-preview__copy" }, "Capa, borda, cores e espaçamento."));
+
       const ThemePreview = component({
         render() {
           const theme = entryData(this.props.entry);
-          const sampleCard = (index) => h("article", { className: "enzo-preview__card", key: index }, h("div", { className: "enzo-preview__empty" }, "Obra"), h("p", { className: "enzo-preview__caption" }, "Ilustração"), h("h3", { className: "enzo-preview__section-title" }, "Projeto em destaque"), h("p", { className: "enzo-preview__copy" }, "Capa, borda, cores e espaçamento."));
-          const site = (mobile) => h("div", { className: `enzo-preview__device${mobile ? " enzo-preview__device--mobile" : ""}` }, h("div", { className: "enzo-preview", style: previewStyle(theme) }, previewHeader("Enzo"), h("section", { className: "enzo-preview__shell enzo-preview__theme-hero" }, h("div", {}, h("p", { className: "enzo-preview__caption" }, "Artista visual"), h("h1", { className: "enzo-preview__hero-title" }, "Obras em movimento"), h("p", { className: "enzo-preview__copy" }, "Cores, tipografia, raio e espaços atualizam enquanto você edita."), h("button", { className: "enzo-preview__button", type: "button" }, "Explorar obras")), h("div", { className: "enzo-preview__empty" }, "Imagem de destaque")), h("section", { className: "enzo-preview__shell enzo-preview__theme-gallery" }, h("h2", { className: "enzo-preview__section-title" }, "Todos os projetos"), h("div", { className: "enzo-preview__filters" }, h("span", {}, "Todos"), h("span", {}, "Animações"), h("span", {}, "Ilustrações")), h("div", { className: "enzo-preview__cards" }, [0, 1, 2, 3].map(sampleCard))), previewFooter()));
+          const site = (mobile) => h("div", { className: `enzo-preview__device${mobile ? " enzo-preview__device--mobile" : ""}` }, h("div", { className: "enzo-preview", style: previewStyle(theme) }, previewHeader("Enzo"), h("section", { className: "enzo-preview__shell enzo-preview__theme-gallery" }, h("p", { className: "enzo-preview__caption" }, "Portfólio"), h("h1", { className: "enzo-preview__section-title" }, "Obras"), h("div", { className: "enzo-preview__filters" }, h("span", {}, "Todas"), h("span", {}, "Animações"), h("span", {}, "Ilustrações")), h("div", { className: "enzo-preview__cards" }, [0, 1, 2, 3].map(samplePreviewCard))), h("section", { className: "enzo-preview__shell enzo-preview__theme-gallery" }, h("div", { className: "enzo-preview__card" }, h("p", { className: "enzo-preview__caption" }, "Seção adicional"), h("h2", { className: "enzo-preview__section-title" }, "Conteúdo organizado pelo artista"), h("p", { className: "enzo-preview__copy" }, "Espaçamento, superfície, bordas e tipografia também são aplicados às seções."))), previewFooter()));
           return h("main", { className: "enzo-preview" }, h("p", { className: "enzo-preview__preview-label" }, "Prévia das configurações ainda não publicadas"), h("div", { className: "enzo-preview__devices" }, site(false), site(true)));
+        }
+      });
+
+      const HomePreview = component({
+        render() {
+          const data = entryData(this.props.entry);
+          const sections = Array.isArray(data.sections) ? data.sections.filter((section) => section.visible !== false) : [];
+          const description = (section) => ({ gallery: "Galeria de obras", featured: "Projetos destacados", categories: "Categorias", editorial: section.content || "Texto editorial", image: section.caption || "Imagem", video: section.caption || "Vídeo", cta: section.content || "Chamada para ação" })[section.type] || "Seção";
+          const sectionPreview = (section, index) => h("section", { className: "enzo-preview__shell enzo-preview__theme-gallery", key: index }, h("p", { className: "enzo-preview__caption" }, section.type || "seção"), section.title && h("h2", { className: "enzo-preview__section-title" }, section.title), h("div", { className: section.type === "editorial" || section.type === "cta" ? "enzo-preview__card" : "" }, h("p", { className: "enzo-preview__copy" }, description(section)), (section.type === "gallery" || section.type === "featured") && h("div", { className: "enzo-preview__cards" }, [0, 1, 2].map(samplePreviewCard)), section.type === "categories" && h("div", { className: "enzo-preview__filters" }, h("span", {}, "Categoria"), h("span", {}, "Categoria")), section.type === "image" && h("div", { className: "enzo-preview__empty" }, "Imagem da seção"), section.type === "video" && h("div", { className: "enzo-preview__empty" }, "Vídeo da seção"), section.type === "cta" && h("button", { className: "enzo-preview__button", type: "button" }, section.buttonLabel || "Abrir")));
+          const theme = previewStyle(publishedTheme);
+          return h("main", { className: "enzo-preview", style: theme }, previewHeader("Enzo"), h("section", { className: "enzo-preview__shell enzo-preview__theme-gallery" }, h("p", { className: "enzo-preview__caption" }, "Portfólio"), h("h1", { className: "enzo-preview__section-title" }, "Obras"), h("div", { className: "enzo-preview__cards" }, [0, 1, 2].map(samplePreviewCard))), sections.length ? sections.map(sectionPreview) : h("p", { className: "enzo-preview__shell enzo-preview__copy" }, "Adicione seções para vê-las depois da galeria principal."), previewFooter());
         }
       });
 
@@ -156,9 +165,10 @@ const serializedTheme = JSON.stringify(themeData).replace(/</g, "\\u003c");
       };
 
       cms.registerPreviewStyle(previewCss, { raw: true });
-      ["projects", "animations", "storyboards", "sketchbooks", "illustrations"].forEach((collection) => cms.registerPreviewTemplate(collection, ProjectPreview));
+      cms.registerPreviewTemplate("projects", ProjectPreview);
       cms.registerPreviewTemplate("about", AboutPreview);
-      cms.registerPreviewTemplate("theme", ThemePreview);
+      cms.registerPreviewTemplate("home", HomePreview);
+      cms.registerPreviewTemplate("appearance", ThemePreview);
       cms.registerEventListener({ name: "preSave", handler: ({ entry }) => validateThemeBeforeSave(entry) });
       cms.init();
     </script>
