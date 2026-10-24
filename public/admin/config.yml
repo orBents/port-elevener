@@ -67,6 +67,30 @@ collections:
         file: src/data/site/theme.json
         fields:
           - { name: type, widget: hidden, default: theme }
+          - label: Cores HEX
+            name: colors
+            widget: object
+            hint: "Escolha no seletor ou digite #RRGGBB. Combinações sem contraste mínimo são recusadas."
+            fields:
+              - { label: Fundo, name: background, widget: color, allowInput: true }
+              - { label: Superfície, name: surface, widget: color, allowInput: true }
+              - { label: Texto, name: text, widget: color, allowInput: true }
+              - { label: Texto secundário, name: mutedText, widget: color, allowInput: true }
+              - { label: Títulos, name: heading, widget: color, allowInput: true }
+              - { label: Links, name: link, widget: color, allowInput: true }
+              - { label: Bordas, name: border, widget: color, allowInput: true }
+              - { label: Botões, name: button, widget: color, allowInput: true }
+              - { label: Destaques, name: accent, widget: color, allowInput: true }
+          - { label: Layout, name: layout, widget: object, fields: [{ label: Largura máxima, name: container, widget: number, min: 960, max: 1600 }, { label: Colunas, name: columns, widget: number, min: 2, max: 4 }, { label: Espaço entre cards, name: cardGap, widget: number, min: 12, max: 48 }, { label: Espaço entre seções, name: sectionGap, widget: number, min: 48, max: 160 }, { label: Margem lateral, name: gutter, widget: number, min: 16, max: 64 }] }
+          - { label: Componentes, name: components, widget: object, fields: [{ label: Raio, name: radius, widget: number, min: 0, max: 40 }, { label: Borda, name: borderWidth, widget: number, min: 0, max: 3 }, { label: Sombra, name: shadow, widget: select, options: [none, soft, strong] }] }
+          - label: Tipografia
+            name: typography
+            widget: object
+            fields:
+              - { label: Hero, name: hero, widget: object, fields: [{ label: Família, name: family, widget: select, options: [sans, serif, mono] }, { label: Tamanho, name: size, widget: number, min: 24, max: 112 }, { label: Peso, name: weight, widget: number, min: 300, max: 800 }, { label: Entrelinha, name: lineHeight, widget: number, min: 0.9, max: 2, value_type: float }, { label: Letter spacing, name: letterSpacing, widget: number, min: -0.1, max: 0.2, value_type: float }] }
+              - { label: Títulos de seção, name: section, widget: object, fields: [{ label: Família, name: family, widget: select, options: [sans, serif, mono] }, { label: Tamanho, name: size, widget: number, min: 20, max: 72 }, { label: Peso, name: weight, widget: number, min: 300, max: 800 }, { label: Entrelinha, name: lineHeight, widget: number, min: 0.9, max: 2, value_type: float }, { label: Letter spacing, name: letterSpacing, widget: number, min: -0.1, max: 0.2, value_type: float }] }
+              - { label: Corpo, name: body, widget: object, fields: [{ label: Família, name: family, widget: select, options: [sans, serif, mono] }, { label: Tamanho, name: size, widget: number, min: 14, max: 28 }, { label: Peso, name: weight, widget: number, min: 300, max: 800 }, { label: Entrelinha, name: lineHeight, widget: number, min: 1, max: 2, value_type: float }, { label: Letter spacing, name: letterSpacing, widget: number, min: -0.1, max: 0.2, value_type: float }] }
+              - { label: Legendas, name: caption, widget: object, fields: [{ label: Família, name: family, widget: select, options: [sans, serif, mono] }, { label: Tamanho, name: size, widget: number, min: 12, max: 20 }, { label: Peso, name: weight, widget: number, min: 300, max: 800 }, { label: Entrelinha, name: lineHeight, widget: number, min: 1, max: 2, value_type: float }, { label: Letter spacing, name: letterSpacing, widget: number, min: -0.1, max: 0.2, value_type: float }] }
           - { label: Cor principal, name: primaryColor, widget: select, options: [violet, blue, green, orange, rose] }
           - { label: Cor secundária, name: secondaryColor, widget: select, options: [zinc, slate, stone] }
           - { label: Fundo, name: background, widget: select, options: [light, warm, dark] }

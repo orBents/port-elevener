@@ -1,18 +1,166 @@
+---
+import themeData from "../data/site/theme.json";
+const serializedTheme = JSON.stringify(themeData).replace(/</g, "\\u003c");
+---
 <!doctype html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="robots" content="noindex" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="cms-config-url" type="text/yaml" href="/admin/config.yml" />
     <title>Administração | Enzo Portfolio</title>
   </head>
   <body>
+    <script is:inline set:html={`window.__ENZO_PUBLISHED_THEME__ = JSON.parse(${JSON.stringify(serializedTheme)});`}></script>
+    <script>(window as Window & { CMS_MANUAL_INIT?: boolean }).CMS_MANUAL_INIT = true;</script>
     <script>
-      (window as Window & { CMS_MANUAL_INIT?: boolean }).CMS_MANUAL_INIT = true;
-    </script>
-    <script>
+      // @ts-nocheck Decap disponibiliza as APIs de preview apenas no navegador.
+      import React from "react";
       import CMS from "decap-cms-app";
-      CMS.init();
+      import previewCss from "../styles/decap-preview.css?raw";
+      import { contrastMessage, defaultColors, defaultComponents, defaultLayout, defaultTypography, hexPattern, typographyStyle } from "../lib/design-system";
+
+      const cms: any = CMS;
+      const h = React.createElement;
+      const component = (definition) => function DecapPreview(props) { return definition.render.call({ props }); };
+      const publishedTheme = window.__ENZO_PUBLISHED_THEME__ || {};
+      const categoryLabels = { animation: "Animação", storyboard: "Storyboard", sketchbook: "Sketchbook", illustration: "Ilustração", authorial: "Projeto autoral" };
+
+      const entryData = (entry) => entry.get("data").toJS();
+      const entryValue = (entry, key, fallback = "") => entry.getIn(["data", key]) ?? fallback;
+      const listValue = (entry, key) => {
+        const value = entryValue(entry, key, []);
+        return value?.toJS?.() ?? value ?? [];
+      };
+      const imageAsset = (getAsset, source) => source ? getAsset(source) : undefined;
+      const stripMarkdown = (content = "") => String(content).replace(/[#*_`>[\]]/g, "").replace(/\n{3,}/g, "\n\n");
+      const videoEmbed = (type, source) => {
+        const youtube = String(source || "").match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^?&/]+)/)?.[1];
+        const vimeo = String(source || "").match(/vimeo\.com\/(\d+)/)?.[1];
+        return type === "youtube" && youtube ? `https://www.youtube-nocookie.com/embed/${youtube}` : type === "vimeo" && vimeo ? `https://player.vimeo.com/video/${vimeo}` : undefined;
+      };
+      const themeValues = (theme = {}) => ({
+        colors: { ...defaultColors, ...(theme.colors || {}) },
+        typography: { ...defaultTypography, ...(theme.typography || {}) },
+        layout: { ...defaultLayout, ...(theme.layout || {}) },
+        components: { ...defaultComponents, ...(theme.components || {}) },
+        aboutLayout: { contentWidth: 720, portraitSize: 160, ...(theme.aboutLayout || {}) },
+      });
+      const previewStyle = (rawTheme = {}) => {
+        const theme = themeValues(rawTheme);
+        const hero = typographyStyle(theme.typography.hero);
+        const section = typographyStyle(theme.typography.section);
+        const body = typographyStyle(theme.typography.body);
+        const caption = typographyStyle(theme.typography.caption);
+        const shadow = theme.components.shadow === "strong" ? "0 20px 45px rgb(0 0 0 / .18)" : theme.components.shadow === "none" ? "none" : "0 12px 30px rgb(24 24 27 / .10)";
+        return {
+          "--color-bg": theme.colors.background, "--color-surface": theme.colors.surface, "--color-text": theme.colors.text,
+          "--color-muted": theme.colors.mutedText, "--color-heading": theme.colors.heading, "--color-link": theme.colors.link,
+          "--color-border": theme.colors.border, "--color-button": theme.colors.button, "--color-accent": theme.colors.accent,
+          "--layout-container": `${theme.layout.container}px`, "--layout-gutter": `${theme.layout.gutter}px`,
+          "--layout-section-gap": `${theme.layout.sectionGap}px`, "--layout-card-gap": `${theme.layout.cardGap}px`,
+          "--preview-columns": theme.layout.columns, "--radius": `${theme.components.radius}px`, "--border-width": `${theme.components.borderWidth}px`,
+          "--shadow": shadow, "--font-hero": hero.family, "--font-section": section.family, "--font-body": body.family, "--font-caption": caption.family,
+          "--size-hero": hero.size, "--leading-hero": hero.lineHeight, "--tracking-hero": hero.tracking, "--size-section": section.size,
+          "--leading-section": section.lineHeight, "--tracking-section": section.tracking, "--size-body": body.size, "--leading-body": body.lineHeight,
+          "--tracking-body": body.tracking, "--size-caption": caption.size, "--leading-caption": caption.lineHeight, "--tracking-caption": caption.tracking,
+          "--about-width": `${theme.aboutLayout.contentWidth}px`, "--portrait-size": `${theme.aboutLayout.portraitSize}px`,
+        };
+      };
+      const mediaPreview = (getAsset, item, title) => {
+        if (!item?.source) return h("div", { className: "enzo-preview__empty", "aria-label": "Mídia ainda não definida" }, "Adicione uma mídia");
+        if (item.type === "image" || !item.type) return h("img", { src: imageAsset(getAsset, item.source), alt: item.alt || title || "" });
+        const embed = videoEmbed(item.type, item.source);
+        return embed ? h("iframe", { className: "enzo-preview__video", src: embed, title: item.caption || `Vídeo: ${title}`, loading: "lazy" }) : h("a", { className: "enzo-preview__video-link", href: item.source, target: "_blank", rel: "noreferrer" }, "Abrir vídeo em nova aba");
+      };
+      const previewHeader = (name = "Enzo") => h("header", { className: "enzo-preview__header" }, h("span", { className: "enzo-preview__brand" }, name), h("nav", { "aria-label": "Navegação de prévia" }, h("span", {}, "Projetos"), h("span", {}, "Sobre")));
+      const previewFooter = () => h("footer", { className: "enzo-preview__footer" }, "Prévia local — o conteúdo final segue a configuração publicada.");
+
+      const ProjectPreview = component({
+        render() {
+          const entry = this.props.entry;
+          const title = entryValue(entry, "title", "Título do projeto");
+          const category = entryValue(entry, "category", "authorial");
+          const media = listValue(entry, "media");
+          const cover = entryValue(entry, "cover", "");
+          const body = stripMarkdown(this.props.widgetFor("body")?.props?.value || "");
+          return h("main", { className: "enzo-preview", style: previewStyle(publishedTheme) },
+            previewHeader(),
+            h("article", { className: "enzo-preview__shell enzo-preview__project" },
+              h("header", { className: "enzo-preview__project-intro" }, h("p", { className: "enzo-preview__caption" }, categoryLabels[category] || "Projeto"), h("h1", { className: "enzo-preview__hero-title" }, title), h("p", { className: "enzo-preview__copy" }, entryValue(entry, "summary", "Resumo do projeto"))),
+              h("div", { className: "enzo-preview__lead-media" }, cover ? mediaPreview(this.props.getAsset, { type: "image", source: cover }, title) : h("div", { className: "enzo-preview__empty" }, "Imagem de capa")),
+              body && h("section", { className: "enzo-preview__body" }, body),
+              media.length > 0 && h("section", { className: "enzo-preview__media-grid", "aria-label": "Galeria do projeto" }, media.map((item, index) => h("figure", { key: `${item.source}-${index}`, className: "enzo-preview__figure" }, mediaPreview(this.props.getAsset, item, title), item.caption && h("figcaption", { className: "enzo-preview__copy" }, item.caption))))
+            ),
+            previewFooter()
+          );
+        }
+      });
+
+      const AboutPreview = component({
+        render() {
+          const entry = this.props.entry;
+          const data = entryData(entry);
+          const visible = { education: true, experience: true, specialties: true, links: true, ...(data.sections || {}) };
+          const list = (name) => Array.isArray(data[name]) ? data[name] : [];
+          return h("main", { className: "enzo-preview", style: previewStyle(publishedTheme) },
+            previewHeader(data.artisticName || "Enzo"),
+            h("article", { className: "enzo-preview__shell enzo-preview__about" },
+              h("header", { className: "enzo-preview__about-intro" }, data.profileImage && h("img", { className: "enzo-preview__portrait", src: imageAsset(this.props.getAsset, data.profileImage), alt: "" }), h("div", {}, h("p", { className: "enzo-preview__caption" }, data.professionalTitle || "Título profissional"), h("h1", { className: "enzo-preview__hero-title" }, data.artisticName || "Nome artístico"), h("p", { className: "enzo-preview__copy" }, data.shortBio || "Apresentação profissional"))),
+              data.fullBio && h("section", { className: "enzo-preview__body" }, stripMarkdown(data.fullBio)),
+              visible.specialties && list("specialties").length > 0 && h("section", { className: "enzo-preview__section" }, h("h2", { className: "enzo-preview__section-title" }, "Prática e competências"), h("ul", { className: "enzo-preview__chips" }, list("specialties").map((item, index) => h("li", { key: index }, item)))),
+              (visible.education || visible.experience) && h("div", { className: "enzo-preview__columns" },
+                visible.education && list("education").length > 0 && h("section", { className: "enzo-preview__section" },
+                  h("h2", { className: "enzo-preview__section-title" }, "Formação"),
+                  h("ul", {}, list("education").map((item, index) => h("li", { key: index }, h("strong", {}, item.title), h("p", { className: "enzo-preview__copy" }, [item.institution, item.year].filter(Boolean).join(" · ")))))
+                ),
+                visible.experience && list("experience").length > 0 && h("section", { className: "enzo-preview__section" },
+                  h("h2", { className: "enzo-preview__section-title" }, "Trajetória"),
+                  h("ul", {}, list("experience").map((item, index) => h("li", { key: index }, h("strong", {}, item.title), h("p", { className: "enzo-preview__copy" }, [item.organization, item.period].filter(Boolean).join(" · ")), item.description && h("p", { className: "enzo-preview__copy" }, item.description))))
+                )
+              ),
+              visible.links && list("links").length > 0 && h("section", { className: "enzo-preview__section" }, h("h2", { className: "enzo-preview__section-title" }, "Contato"), h("div", { className: "enzo-preview__links" }, list("links").map((item, index) => h("a", { key: index, href: item.url, target: "_blank", rel: "noreferrer" }, item.label))))
+            ),
+            previewFooter()
+          );
+        }
+      });
+
+      const ThemePreview = component({
+        render() {
+          const theme = entryData(this.props.entry);
+          const sampleCard = (index) => h("article", { className: "enzo-preview__card", key: index }, h("div", { className: "enzo-preview__empty" }, "Obra"), h("p", { className: "enzo-preview__caption" }, "Ilustração"), h("h3", { className: "enzo-preview__section-title" }, "Projeto em destaque"), h("p", { className: "enzo-preview__copy" }, "Capa, borda, cores e espaçamento."));
+          const site = (mobile) => h("div", { className: `enzo-preview__device${mobile ? " enzo-preview__device--mobile" : ""}` }, h("div", { className: "enzo-preview", style: previewStyle(theme) }, previewHeader("Enzo"), h("section", { className: "enzo-preview__shell enzo-preview__theme-hero" }, h("div", {}, h("p", { className: "enzo-preview__caption" }, "Artista visual"), h("h1", { className: "enzo-preview__hero-title" }, "Obras em movimento"), h("p", { className: "enzo-preview__copy" }, "Cores, tipografia, raio e espaços atualizam enquanto você edita."), h("button", { className: "enzo-preview__button", type: "button" }, "Explorar obras")), h("div", { className: "enzo-preview__empty" }, "Imagem de destaque")), h("section", { className: "enzo-preview__shell enzo-preview__theme-gallery" }, h("h2", { className: "enzo-preview__section-title" }, "Todos os projetos"), h("div", { className: "enzo-preview__filters" }, h("span", {}, "Todos"), h("span", {}, "Animações"), h("span", {}, "Ilustrações")), h("div", { className: "enzo-preview__cards" }, [0, 1, 2, 3].map(sampleCard))), previewFooter()));
+          return h("main", { className: "enzo-preview" }, h("p", { className: "enzo-preview__preview-label" }, "Prévia das configurações ainda não publicadas"), h("div", { className: "enzo-preview__devices" }, site(false), site(true)));
+        }
+      });
+
+      const validateThemeBeforeSave = (entry) => {
+        const theme = entryData(entry);
+        if (theme.type !== "theme") return;
+        const { colors } = themeValues(theme);
+        const pairs = [
+          ["text", colors.text, "background", colors.background, 4.5], ["text", colors.text, "surface", colors.surface, 4.5],
+          ["mutedText", colors.mutedText, "background", colors.background, 4.5], ["link", colors.link, "background", colors.background, 4.5],
+          ["heading", colors.heading, "background", colors.background, 3], ["button", colors.button, "background", colors.background, 3],
+        ];
+        const errors = [];
+        Object.entries(colors).forEach(([token, hex]) => { if (!hexPattern.test(hex)) errors.push(`${token}: use uma cor no formato #RRGGBB.`); });
+        pairs.forEach(([foregroundToken, foreground, backgroundToken, background, minimum]) => {
+          const message = contrastMessage(foreground, background, `${foregroundToken} sobre ${backgroundToken}`, minimum);
+          if (message) errors.push(message);
+        });
+        if (errors.length) throw new Error(`Não foi possível salvar Aparência do site:\n${errors.join("\n")}`);
+      };
+
+      cms.registerPreviewStyle(previewCss, { raw: true });
+      ["projects", "animations", "storyboards", "sketchbooks", "illustrations"].forEach((collection) => cms.registerPreviewTemplate(collection, ProjectPreview));
+      cms.registerPreviewTemplate("about", AboutPreview);
+      cms.registerPreviewTemplate("theme", ThemePreview);
+      cms.registerEventListener({ name: "preSave", handler: ({ entry }) => validateThemeBeforeSave(entry) });
+      cms.init();
     </script>
   </body>
 </html>

@@ -1,23 +1,8 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
-
-const about = (await getCollection("site")).find((entry) => entry.data.type === "about");
-if (!about || about.data.type !== "about") throw new Error("Perfil do site não encontrado.");
-const profile = about.data;
+const about = (await getCollection("site")).find((entry) => entry.data.type === "about"); if (!about || about.data.type !== "about") throw new Error("Perfil do site não encontrado."); const profile = about.data;
 ---
-
-<BaseLayout title={`Sobre | ${profile.artisticName}`} description={profile.shortBio}>
-  <article class="max-w-2xl">
-    {profile.profileImage && <img class="mb-8 aspect-square w-32 rounded-full object-cover" src={profile.profileImage} alt={`Retrato de ${profile.artisticName}`} />}
-    <p class="text-sm font-medium uppercase tracking-[0.14em] text-zinc-500">{profile.professionalTitle}</p>
-    <h1 class="mt-3 text-4xl font-semibold tracking-tight">{profile.artisticName}</h1>
-    <p class="mt-5 text-lg text-zinc-600">{profile.shortBio}</p>
-    {profile.fullBio && <div class="mt-8 whitespace-pre-line text-zinc-700">{profile.fullBio}</div>}
-    {profile.specialties.length > 0 && <section class="mt-10"><h2 class="text-xl font-semibold">Especialidades</h2><ul class="mt-3 flex flex-wrap gap-2">{profile.specialties.map((specialty) => <li class="rounded-full bg-zinc-100 px-3 py-1 text-sm">{specialty}</li>)}</ul></section>}
-    {profile.sections.education && profile.education.length > 0 && <section class="mt-10"><h2 class="text-xl font-semibold">Formação</h2><ul class="mt-3 space-y-3">{profile.education.map((item) => <li><strong>{item.title}</strong>{item.institution && ` · ${item.institution}`}{item.year && ` (${item.year})`}</li>)}</ul></section>}
-    {profile.sections.experience && profile.experience.length > 0 && <section class="mt-10"><h2 class="text-xl font-semibold">Trajetória</h2><ul class="mt-3 space-y-4">{profile.experience.map((item) => <li><strong>{item.title}</strong>{item.organization && ` · ${item.organization}`}{item.period && ` (${item.period})`}{item.description && <p class="mt-1 text-zinc-600">{item.description}</p>}</li>)}</ul></section>}
-    {profile.sections.links && profile.links.length > 0 && <section class="mt-10"><h2 class="text-xl font-semibold">Links</h2><ul class="mt-3 space-y-2">{profile.links.map((link) => <li><a class="underline" href={link.url} rel="noreferrer" target="_blank">{link.label}</a></li>)}</ul></section>}
-    {profile.resume && <a class="mt-10 inline-block underline" href={profile.resume}>Baixar currículo (PDF)</a>}
-  </article>
+<BaseLayout title={`Sobre | ${profile.artisticName}`} description={profile.shortBio} image={profile.profileImage}>
+  <article class="site-shell site-section" style="max-width:var(--about-width,960px)"><header class="grid items-end gap-8 md:grid-cols-[auto_1fr]">{profile.profileImage && <img class="aspect-square w-32 object-cover sm:w-44" style="border-radius:var(--radius)" src={profile.profileImage} alt={`Retrato de ${profile.artisticName}`} />}<div><p class="site-caption text-xs font-bold uppercase tracking-[.18em]">{profile.professionalTitle}</p><h1 class="site-hero mt-4">{profile.artisticName}</h1><p class="site-copy mt-5 max-w-xl text-lg leading-relaxed">{profile.shortBio}</p></div></header>{profile.fullBio && <section class="mt-[var(--layout-section-gap)] max-w-2xl"><div class="site-copy whitespace-pre-line text-lg leading-relaxed">{profile.fullBio}</div></section>}{profile.sections.specialties && profile.specialties.length > 0 && <section class="mt-12"><h2 class="site-heading text-2xl font-semibold">Prática e competências</h2><ul class="mt-5 flex flex-wrap gap-2">{profile.specialties.map((specialty) => <li class="rounded-full px-4 py-2 text-sm" style="background:var(--color-surface);border:var(--border-width) solid var(--color-border)">{specialty}</li>)}</ul></section>}<div class="mt-[var(--layout-section-gap)] grid gap-12 md:grid-cols-2">{profile.sections.education && profile.education.length > 0 && <section><h2 class="site-heading text-2xl font-semibold">Formação</h2><ul class="mt-6 space-y-5">{profile.education.map((item) => <li><strong>{item.title}</strong><p class="site-copy mt-1 text-sm">{[item.institution,item.year].filter(Boolean).join(" · ")}</p></li>)}</ul></section>}{profile.sections.experience && profile.experience.length > 0 && <section><h2 class="site-heading text-2xl font-semibold">Trajetória</h2><ul class="mt-6 space-y-5">{profile.experience.map((item) => <li><strong>{item.title}</strong><p class="site-copy mt-1 text-sm">{[item.organization,item.period].filter(Boolean).join(" · ")}</p>{item.description && <p class="site-copy mt-2 text-sm">{item.description}</p>}</li>)}</ul></section>}</div>{profile.sections.links && profile.links.length > 0 && <section class="mt-[var(--layout-section-gap)]"><h2 class="site-heading text-2xl font-semibold">Contato</h2><ul class="mt-5 flex flex-wrap gap-3">{profile.links.map((link) => <li><a class="site-button" style="border:var(--border-width) solid var(--color-border)" href={link.url} target="_blank" rel="noreferrer">{link.label} ↗</a></li>)}</ul>{profile.resume && <a class="mt-5 inline-block text-sm font-semibold underline underline-offset-4" href={profile.resume}>Baixar currículo</a>}</section>}</article>
 </BaseLayout>

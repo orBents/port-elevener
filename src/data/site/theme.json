@@ -1,18 +1,23 @@
 {
-  "heroImage": "/uploads/logo.jpg",
+  "type": "theme",
+  "colors": { "background": "#FFFFFF", "surface": "#F4F4F5", "text": "#18181B", "mutedText": "#475569", "heading": "#09090B", "link": "#15803D", "border": "#D4D4D8", "button": "#18181B", "accent": "#15803D" },
+  "typography": {
+    "hero": { "family": "serif", "size": 72, "weight": 700, "lineHeight": 0.98, "letterSpacing": -0.06 },
+    "section": { "family": "serif", "size": 42, "weight": 650, "lineHeight": 1.05, "letterSpacing": -0.035 },
+    "body": { "family": "serif", "size": 18, "weight": 400, "lineHeight": 1.6, "letterSpacing": 0 },
+    "caption": { "family": "serif", "size": 13, "weight": 600, "lineHeight": 1.35, "letterSpacing": 0.08 }
+  },
+  "layout": { "container": 1280, "columns": 4, "cardGap": 24, "sectionGap": 96, "gutter": 32 },
+  "components": { "radius": 20, "borderWidth": 1, "shadow": "soft" },
+  "aboutLayout": { "contentWidth": 720, "portraitSize": 160 },
   "primaryColor": "green",
-  "spacing": "comfortable",
-  "footerText": "Muito Obrigado, volte sempre",
-  "galleryColumns": "4",
+  "secondaryColor": "slate",
   "background": "light",
   "font": "serif",
-  "secondaryColor": "slate",
+  "galleryColumns": "4",
   "coverStyle": "soft",
-  "type": "theme",
-  "footerLinks": [
-    {
-      "label": "Insta",
-      "url": "https://www.instagram.com/elevener.art/"
-    }
-  ]
+  "spacing": "comfortable",
+  "heroImage": "/uploads/logo.jpg",
+  "footerText": "Muito Obrigado, volte sempre",
+  "footerLinks": [{ "label": "Insta", "url": "https://www.instagram.com/elevener.art/" }]
 }

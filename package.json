@@ -11,7 +11,8 @@
     "build": "astro check && astro build",
     "check": "astro check",
     "preview": "astro preview",
-    "pages:dev": "npm run build && wrangler pages dev dist"
+    "pages:dev": "npm run build && wrangler pages dev dist",
+    "test:design-system": "tsc tests/design-system.test.ts src/lib/design-system.ts --outDir .test-dist --module nodenext --moduleResolution nodenext --target es2022 --types node && node --test .test-dist/tests/design-system.test.js"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
