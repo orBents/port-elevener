@@ -48,6 +48,12 @@ collections:
             fields:
               - { label: URL do YouTube, name: source, widget: string, pattern: ["^https?://(?:www\\.)?(youtube\\.com|youtu\\.be)/", "Use uma URL pública do YouTube." ] }
               - { label: Legenda, name: caption, widget: string, required: false }
+          - label: GIF animado
+            name: gif
+            fields:
+              - { label: Arquivo GIF, name: source, widget: image, choose_url: false, hint: "Envie um GIF animado (.gif). A animação será reproduzida automaticamente em loop." }
+              - { label: Texto alternativo, name: alt, widget: string, required: false, hint: "Descreva a animação para leitores de tela." }
+              - { label: Legenda, name: caption, widget: string, required: false }
           - label: Vídeo do Vimeo
             name: vimeo
             fields:

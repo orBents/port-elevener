@@ -2,7 +2,7 @@
 .site-shell { width:100%; max-width:var(--layout-container); padding-inline:var(--layout-gutter); margin-inline:auto; }
 .site-surface { background:var(--color-surface); border:var(--border-width) solid var(--color-border); border-radius:var(--radius); box-shadow:var(--shadow); }
 .site-caption { color:var(--color-accent); font-family:var(--font-caption); font-size:var(--size-caption); font-weight:var(--weight-caption,600); line-height:var(--leading-caption,1.35); letter-spacing:var(--tracking-caption,.08em); }
-.site-section { padding-block:var(--layout-section-gap); }
+.site-section { padding-block:clamp(3.5rem,8vw,6rem); }
 .site-heading { color:var(--color-heading); font-family:var(--font-section); font-size:var(--size-section); font-weight:var(--weight-section,650); line-height:var(--leading-section,1.05); letter-spacing:var(--tracking-section,-.035em); }
 .site-hero { color:var(--color-heading); font-family:var(--font-hero); font-size:var(--size-hero); font-weight:var(--weight-hero,700); line-height:var(--leading-hero,.98); letter-spacing:var(--tracking-hero,-.06em); }
 .site-copy { color:var(--color-muted); font-family:var(--font-body); font-size:var(--size-body); font-weight:var(--weight-body,400); line-height:var(--leading-body,1.6); letter-spacing:var(--tracking-body,0); }
@@ -13,7 +13,9 @@
 .site-button:focus-visible,.site-filter:focus-visible,.site-category-link:focus-visible { outline:3px solid var(--color-accent); outline-offset:3px; }
 .site-filter { border-radius:999px; border:var(--border-width) solid var(--color-border); padding:.55rem .9rem; color:var(--color-text); }
 .site-filter[aria-pressed="true"] { color:var(--color-bg); background:var(--color-button); border-color:var(--color-button); }
+a[aria-current="page"] { color:var(--color-heading); text-decoration:underline; text-underline-offset:4px; }
 .project-card__media { overflow:hidden; border:var(--border-width) solid var(--color-border); border-radius:var(--radius); background:var(--color-surface); box-shadow:var(--shadow); }
+.project-card__media img { aspect-ratio:auto; }
 .project-card__image { display:block; width:100%; height:auto; object-fit:contain; }
 body[data-cover-fit="cover"] .project-card__media { aspect-ratio:4 / 3; }
 body[data-cover-fit="cover"] .project-card__image { height:100%; object-fit:cover; }

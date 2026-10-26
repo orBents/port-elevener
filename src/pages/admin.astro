@@ -68,7 +68,7 @@ const serializedTheme = JSON.stringify(themeData).replace(/</g, "\\u003c");
       };
       const mediaPreview = (getAsset, item, title) => {
         if (!item?.source) return h("div", { className: "enzo-preview__empty", "aria-label": "Mídia ainda não definida" }, "Adicione uma mídia");
-        if (item.type === "image" || !item.type) return isSafeMediaSource(item.source) ? h("img", { src: imageAsset(getAsset, item.source), alt: item.alt || title || "" }) : h("div", { className: "enzo-preview__empty" }, "Imagem indisponível");
+        if (item.type === "image" || item.type === "gif" || !item.type) return isSafeMediaSource(item.source) ? h("img", { src: imageAsset(getAsset, item.source), alt: item.alt || title || "" }) : h("div", { className: "enzo-preview__empty" }, "Imagem indisponível");
         const embed = videoEmbed(item.type, item.source);
         return embed ? h("iframe", { className: "enzo-preview__video", src: embed, title: item.caption || `Vídeo: ${title}`, loading: "lazy" }) : h("a", { className: "enzo-preview__video-link", href: item.source, target: "_blank", rel: "noreferrer" }, "Abrir vídeo em nova aba");
       };

@@ -7,6 +7,7 @@ const urlOrPath = z.string().refine((value) => value.startsWith("/") || /^https?
 const videoUrl = z.string().url().refine((value) => /(?:youtube\.com|youtu\.be|vimeo\.com)/.test(value), "Use uma URL pública do YouTube ou Vimeo.");
 const mediaItem = z.discriminatedUnion("type", [
   z.object({ type: z.literal("image"), source: urlOrPath, alt: z.string().optional(), caption: z.string().optional() }),
+  z.object({ type: z.literal("gif"), source: urlOrPath, alt: z.string().optional(), caption: z.string().optional() }),
   z.object({ type: z.literal("youtube"), source: videoUrl, caption: z.string().optional() }),
   z.object({ type: z.literal("vimeo"), source: videoUrl, caption: z.string().optional() }),
 ]);

@@ -16,5 +16,5 @@ test("uses typed project media and relation-driven categories", () => {
   const category = projects.fields.find((field) => field.name === "category");
   const media = projects.fields.find((field) => field.name === "media");
   assert.equal(category.widget, "relation");
-  assert.deepEqual(media.types.map((type) => type.name), ["image", "youtube", "vimeo"]);
+  assert.deepEqual(media.types.map((type) => type.name), ["image", "youtube", "gif", "vimeo"]);
 });

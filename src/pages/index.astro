@@ -28,7 +28,6 @@ if (missingCategories.length) throw new Error(`Categorias ausentes para obras pu
         <p class="site-caption text-xs font-bold uppercase tracking-[.17em]">Portfólio</p>
         <h1 id="projects-title" class="site-heading mt-2">Obras</h1>
       </div>
-      {categories.length > 0 && <div class="flex flex-wrap gap-2" role="toolbar" aria-label="Filtrar obras por categoria"><button class="site-filter" type="button" data-filter="all" aria-pressed="true">Todas</button>{categories.map((category) => <button class="site-filter" type="button" data-filter={category.data.slug} aria-pressed="false">{category.data.name}</button>)}</div>}
     </div>
     {projects.length ? <div id="project-grid" class="site-grid mt-10" data-columns={columns}>{projects.map((project) => <ProjectCard project={project} label={displayCategory(project.data.category, categoryLabels)} />)}</div> : <div class="site-surface mt-8 p-10"><p class="site-copy">As obras publicadas aparecerão aqui.</p></div>}
     <p id="filter-empty" class="site-copy mt-8" role="status" hidden>Nenhuma obra publicada nesta categoria.</p>
@@ -36,21 +35,26 @@ if (missingCategories.length) throw new Error(`Categorias ausentes para obras pu
 
   <HomeSections sections={configuredSections} projects={projects} categories={categories} />
 
-  <section class="site-shell pb-[var(--layout-section-gap)]" aria-label="Conheça o artista">
-    <div class="border-t pt-8" style="border-color:var(--color-border)"><a class="site-copy inline-flex items-center gap-2 font-semibold underline underline-offset-4" href="/about">Conheça o artista <span aria-hidden="true">→</span></a></div>
-  </section>
 </BaseLayout>
 <script>
-  const controls = [...document.querySelectorAll<HTMLButtonElement>("[data-filter]")];
+  const controls = [...document.querySelectorAll<HTMLElement>("[data-filter], [data-category-link]")];
   const cards = [...document.querySelectorAll<HTMLElement>(".project-card")];
   const emptyState = document.querySelector<HTMLElement>("#filter-empty");
   const applyFilter = (filter: string) => {
-    controls.forEach((control) => control.setAttribute("aria-pressed", String(control.dataset.filter === filter)));
+    controls.forEach((control) => {
+      const value = control.dataset.filter || control.dataset.categoryLink || "all";
+      control.setAttribute("aria-current", value === filter ? "page" : "false");
+      if (control.dataset.filter) control.setAttribute("aria-pressed", String(value === filter));
+    });
     cards.forEach((card) => { card.hidden = filter !== "all" && card.dataset.category !== filter; });
     const visibleCards = cards.some((card) => !card.hidden);
     if (emptyState) emptyState.hidden = filter === "all" || visibleCards;
   };
-  controls.forEach((control) => control.addEventListener("click", () => applyFilter(control.dataset.filter || "all")));
+  controls.forEach((control) => control.addEventListener("click", (event) => {
+    const filter = control.dataset.filter || control.dataset.categoryLink;
+    if (filter) { event.preventDefault(); history.replaceState({}, "", `/?categoria=${filter}`); applyFilter(filter); }
+  }));
+  document.querySelector<HTMLAnchorElement>('a[href="/#projetos"]')?.addEventListener("click", (event) => { event.preventDefault(); history.replaceState({}, "", "/#projetos"); applyFilter("all"); });
   const requestedCategory = new URLSearchParams(window.location.search).get("categoria");
-  if (requestedCategory && controls.some((control) => control.dataset.filter === requestedCategory)) applyFilter(requestedCategory);
+  if (requestedCategory && controls.some((control) => control.dataset.categoryLink === requestedCategory)) applyFilter(requestedCategory);
 </script>

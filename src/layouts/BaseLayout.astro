@@ -7,10 +7,13 @@ import { typographyStyle } from "../lib/design-system";
 interface Props { title: string; description?: string; image?: string; }
 const { title, description = "Portfólio profissional de artes visuais.", image } = Astro.props;
 const site = await getCollection("site");
+const categories = (await getCollection("categories", ({ data }) => data.visible)).sort((left, right) => left.data.order - right.data.order || left.data.name.localeCompare(right.data.name, "pt-BR"));
 const themeEntry = site.find((item) => item.data.type === "theme");
 const aboutEntry = site.find((item) => item.data.type === "about");
 const theme = themeEntry?.data.type === "theme" ? themeEntry.data : undefined;
 const profile = aboutEntry?.data.type === "about" ? aboutEntry.data : undefined;
+const contactLink = theme?.showContactLink !== false ? profile?.links[0] : undefined;
+const socialLinks = [...(profile?.links ?? []), ...(theme?.footerLinks ?? [])].filter((link, index, all) => /insta|instagram/i.test(link.label) && link.url !== contactLink?.url && all.findIndex((candidate) => candidate.url === link.url) === index);
 const colors = theme?.colors;
 const typography = theme?.typography;
 const layout = theme?.layout;
@@ -41,13 +44,15 @@ const tokenStyle = theme && colors && layout && components && hero && section &&
       <nav class="site-shell flex min-h-18 items-center justify-between gap-5 py-5" aria-label="Principal">
         <a class="font-semibold tracking-tight" style="color:var(--color-heading)" href="/">{profile?.artisticName ?? "Enzo Portfolio"}</a>
         <div class="flex items-center gap-5 text-sm">
-          <a href="/#projetos">Obras</a>
+          <a href="/#projetos">Home</a>
+          {categories.map((category) => <a data-category-link={category.data.slug} href={`/?categoria=${category.data.slug}`}>{category.data.name}</a>)}
           <a href="/about">Sobre</a>
-          {theme?.showContactLink !== false && profile?.links[0] && <a class="hidden sm:inline" href={profile.links[0].url} target="_blank" rel="noreferrer">Contato ↗</a>}
+          {contactLink && <a class="hidden sm:inline" href={contactLink.url} target="_blank" rel="noreferrer">{contactLink.label}</a>}
+          {socialLinks.map((link) => <a class="hidden sm:inline" href={link.url} target="_blank" rel="noreferrer">{link.label}</a>)}
         </div>
       </nav>
     </header>
     <main><slot /></main>
-    {theme?.showFooter !== false && <footer class="site-shell border-t py-10 text-sm" style="border-color:var(--color-border);color:var(--color-muted)"><div class="flex flex-wrap items-center justify-between gap-4"><span>{theme?.footerText || profile?.professionalTitle || "Portfólio"}</span>{theme?.footerLinks.length ? <ul class="flex flex-wrap gap-4">{theme.footerLinks.map((link) => <li><a class="underline underline-offset-4" href={link.url} target="_blank" rel="noreferrer">{link.label}</a></li>)}</ul> : profile?.links.length ? <ul class="flex flex-wrap gap-4">{profile.links.map((link) => <li><a class="underline underline-offset-4" href={link.url} target="_blank" rel="noreferrer">{link.label}</a></li>)}</ul> : null}</div></footer>}
+    {theme?.showFooter !== false && <footer class="site-shell border-t py-10 text-sm" style="border-color:var(--color-border);color:var(--color-muted)"><div class="flex flex-wrap items-center justify-between gap-4"><span>{theme?.footerText || profile?.professionalTitle || "Portfólio"}</span>{theme?.footerLinks.length ? <ul class="flex flex-wrap gap-4">{theme.footerLinks.filter((link) => !/insta|instagram/i.test(link.label)).map((link) => <li><a class="underline underline-offset-4" href={link.url} target="_blank" rel="noreferrer">{link.label}</a></li>)}</ul> : profile?.links.length ? <ul class="flex flex-wrap gap-4">{profile.links.map((link) => <li><a class="underline underline-offset-4" href={link.url} target="_blank" rel="noreferrer">{link.label}</a></li>)}</ul> : null}</div></footer>}
   </body>
 </html>
