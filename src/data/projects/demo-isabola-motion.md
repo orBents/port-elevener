@@ -1,5 +1,5 @@
 ---
-title: Demo — Estudo de Movimento Isabola
+title: Demo — Estudo de Movimento
 slug: demo-isabola-motion
 category: animation
 summary: Demonstração de animação com GIF em loop e vídeo público de referência;
@@ -8,16 +8,12 @@ order: 10
 published: true
 featured: true
 publishedAt: 2026-10-26
-cover: /uploads/elevener-11-isabola-31-07-22.jpg
+cover: /uploads/freak-sonic-meme-gif.gif
 media:
   - type: gif
     source: /uploads/working-chis-sweet-home-gif.gif
     alt: "GIF demonstrativo derivado da ilustração "
     caption: GIF demonstrativo em loop, criado apenas para homologação.
-  - type: image
-    source: /uploads/elevener-11-isabola-31-07-22.jpg
-    alt: Imagem original usada para derivar o GIF demonstrativo
-    caption: Imagem estática original preservada na galeria.
   - type: youtube
     source: https://www.youtube.com/watch?v=aqz-KE-bpKQ
     caption: Vídeo público de demonstração técnica; não é obra do artista.
