@@ -1,7 +1,7 @@
 ---
 type: about
-artisticName: Enzo
-professionalTitle: ARTIST / ANIMATOR
+artisticName: Enzo Oliveira
+professionalTitle: Storyboard Artist & Illustrator
 profileImage: /uploads/logo.jpg
 shortBio: Elevener
 fullBio: >-
