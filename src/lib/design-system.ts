@@ -12,7 +12,17 @@ export const defaultTypography = {
   caption: { family: "sans", size: 13, weight: 600, lineHeight: 1.35, letterSpacing: 0.08 },
 } as const;
 
-export const defaultLayout = { container: 1280, columns: 3, cardGap: 24, sectionGap: 96, gutter: 32 } as const;
+export const defaultLayout = {
+  container: 1280,
+  columns: 3,
+  mobileColumns: 1,
+  cardGap: 24,
+  sectionGap: 96,
+  gutter: 32,
+  coverFit: "contain",
+  thumbnailRatio: "original",
+  density: "comfortable",
+} as const;
 export const defaultComponents = { radius: 20, borderWidth: 1, shadow: "soft" } as const;
 
 function luminance(hex: string) {

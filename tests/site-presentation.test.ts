@@ -29,4 +29,36 @@ test("resolves labels, explicit selections and safe theme defaults", () => {
   assert.equal(variables["--color-bg"], "#000000");
   assert.equal(variables["--preview-columns"], undefined);
   assert.equal(variables["--grid-mobile-columns"], "1");
+  assert.equal(variables["--grid-tablet-columns"], "2");
+  assert.equal(variables["--grid-desktop-columns"], "2");
+  assert.equal(variables["--card-thumbnail-ratio"], "auto");
+  assert.equal(variables["--card-media-fit"], "contain");
+});
+
+test("maps compact density and fixed thumbnails to safe grid tokens", () => {
+  const theme = normalizeTheme({ layout: { columns: 4, mobileColumns: 2, cardGap: 24, sectionGap: 96, gutter: 32, density: "compact", thumbnailRatio: "wide" } });
+  const variables = siteCssVariables(theme);
+  assert.equal(variables["--grid-desktop-columns"], "4");
+  assert.equal(variables["--grid-tablet-columns"], "2");
+  assert.equal(variables["--grid-mobile-columns"], "2");
+  assert.equal(variables["--layout-card-gap"], "18px");
+  assert.equal(variables["--layout-section-gap"], "72px");
+  assert.equal(variables["--layout-gutter"], "24px");
+  assert.equal(variables["--card-thumbnail-ratio"], "16 / 9");
+  assert.equal(variables["--card-media-fit"], "cover");
+  assert.equal(variables["--card-image-height"], "100%");
+});
+
+test("supports every configured desktop column count and thumbnail ratio", () => {
+  const ratios = { original: ["auto", "contain", "auto"], square: ["1 / 1", "cover", "100%"], wide: ["16 / 9", "cover", "100%"] } as const;
+  for (const columns of [1, 2, 3, 4]) {
+    for (const [ratio, expected] of Object.entries(ratios)) {
+      const variables = siteCssVariables({ layout: { columns, thumbnailRatio: ratio } });
+      assert.equal(variables["--grid-desktop-columns"], String(columns));
+      assert.equal(variables["--grid-tablet-columns"], String(Math.min(columns, 2)));
+      assert.equal(variables["--card-thumbnail-ratio"], expected[0]);
+      assert.equal(variables["--card-media-fit"], expected[1]);
+      assert.equal(variables["--card-image-height"], expected[2]);
+    }
+  }
 });

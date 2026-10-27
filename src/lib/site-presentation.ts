@@ -16,7 +16,7 @@ export function normalizeTheme(theme: ThemeInput = {}) {
       body: { ...defaultTypography.body, ...(theme.typography?.body || {}) },
       caption: { ...defaultTypography.caption, ...(theme.typography?.caption || {}) },
     },
-    layout: { ...defaultLayout, mobileColumns: 1, coverFit: "contain", ...(theme.layout || {}) },
+    layout: { ...defaultLayout, ...(theme.layout || {}) },
     components: { ...defaultComponents, ...(theme.components || {}) },
     aboutLayout: { contentWidth: 720, portraitSize: 160, ...(theme.aboutLayout || {}) },
     showContactLink: theme.showContactLink !== false,
@@ -33,6 +33,11 @@ export function siteCssVariables(rawTheme: ThemeInput = {}): Record<string, stri
   const body = typographyStyle(theme.typography.body);
   const caption = typographyStyle(theme.typography.caption);
 
+  const density = theme.layout.density === "compact" ? 0.75 : 1;
+  const thumbnailRatio = theme.layout.thumbnailRatio === "square" ? "1 / 1" : theme.layout.thumbnailRatio === "wide" ? "16 / 9" : "auto";
+  const desktopColumns = Math.min(4, Math.max(1, theme.layout.columns));
+  const tabletColumns = Math.min(2, desktopColumns);
+
   return {
     "--color-bg": theme.colors.background,
     "--color-surface": theme.colors.surface,
@@ -44,14 +49,19 @@ export function siteCssVariables(rawTheme: ThemeInput = {}): Record<string, stri
     "--color-button": theme.colors.button,
     "--color-accent": theme.colors.accent,
     "--layout-container": `${theme.layout.container}px`,
-    "--layout-gutter": `${theme.layout.gutter}px`,
-    "--layout-section-gap": `${theme.layout.sectionGap}px`,
-    "--layout-card-gap": `${theme.layout.cardGap}px`,
+    "--layout-gutter": `${Math.max(16, Math.round(theme.layout.gutter * density))}px`,
+    "--layout-section-gap": `${Math.max(48, Math.round(theme.layout.sectionGap * density))}px`,
+    "--layout-card-gap": `${Math.max(12, Math.round(theme.layout.cardGap * density))}px`,
     "--grid-mobile-columns": String(theme.layout.mobileColumns),
+    "--grid-tablet-columns": String(tabletColumns),
+    "--grid-desktop-columns": String(desktopColumns),
+    "--card-content-padding": theme.layout.density === "compact" ? "0.7rem" : "1rem",
+    "--card-thumbnail-ratio": thumbnailRatio,
     "--radius": `${theme.components.radius}px`,
     "--border-width": `${theme.components.borderWidth}px`,
     "--shadow": shadowValue(theme.components.shadow),
-    "--card-media-fit": theme.layout.coverFit,
+    "--card-media-fit": theme.layout.thumbnailRatio === "original" ? "contain" : "cover",
+    "--card-image-height": theme.layout.thumbnailRatio === "original" ? "auto" : "100%",
     "--font-hero": hero.family,
     "--font-section": section.family,
     "--font-body": body.family,

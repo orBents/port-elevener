@@ -28,7 +28,7 @@ const tokenStyle = theme ? siteCssText(theme) : "";
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
   </head>
-  <body style={tokenStyle} data-cover-fit={theme?.layout.coverFit ?? "contain"} class="antialiased">
+  <body style={tokenStyle} data-cover-fit={theme?.layout.coverFit ?? "contain"} data-thumbnail-ratio={theme?.layout.thumbnailRatio ?? "original"} class="antialiased">
     <header class="border-b" style="border-color:var(--color-border);background:var(--color-bg)">
       <nav class="site-shell flex min-h-18 items-center justify-between gap-5 py-5" aria-label="Principal">
         <a class="font-semibold tracking-tight" style="color:var(--color-heading)" href="/">{profile?.artisticName ?? "Enzo Portfolio"}</a>

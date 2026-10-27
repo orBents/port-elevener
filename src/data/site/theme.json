@@ -7,7 +7,7 @@
     "body": { "family": "sans", "size": 16, "weight": 400, "lineHeight": 1.6, "letterSpacing": 0 },
     "caption": { "family": "sans", "size": 12, "weight": 600, "lineHeight": 1.35, "letterSpacing": 0.08 }
   },
-  "layout": { "container": 1440, "columns": 2, "mobileColumns": 1, "cardGap": 28, "sectionGap": 112, "gutter": 40, "coverFit": "contain" },
+  "layout": { "container": 1440, "columns": 3, "mobileColumns": 1, "cardGap": 28, "sectionGap": 112, "gutter": 40, "coverFit": "contain", "thumbnailRatio": "original", "density": "comfortable" },
   "components": { "radius": 20, "borderWidth": 1, "shadow": "soft" },
   "aboutLayout": { "contentWidth": 720, "portraitSize": 160 },
   "primaryColor": "green",

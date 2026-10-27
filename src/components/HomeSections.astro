@@ -7,8 +7,9 @@ interface Props {
   sections: any[];
   projects: CollectionEntry<"projects">[];
   categories: CollectionEntry<"categories">[];
+  columns: string;
 }
-const { sections, projects, categories } = Astro.props;
+const { sections, projects, categories, columns } = Astro.props;
 const visibleSections = sections.filter((section) => section.visible !== false);
 const categoryLabels = new Map(categories.map((category) => [category.data.slug, category.data.name]));
 const selectedCategories = (slugs: string[]) => slugs.length ? categories.filter((category) => slugs.includes(category.data.slug)) : categories;
@@ -18,11 +19,11 @@ const selectedCategories = (slugs: string[]) => slugs.length ? categories.filter
   const sectionHeader = () => (section.eyebrow || section.title) && <header class:list={["mb-8", headingClass]}>{section.eyebrow && <p class="site-caption text-xs font-bold uppercase tracking-[.17em]">{section.eyebrow}</p>}{section.title && <h2 class="site-heading mt-2">{section.title}</h2>}</header>;
   if (section.type === "gallery") {
     const sectionProjects = projects.filter((project) => !section.categories.length || section.categories.includes(project.data.category)).slice(0, section.limit);
-    return <section class="site-shell site-section" aria-label={section.title || "Galeria de obras"}>{sectionHeader()}{sectionProjects.length ? <div class="site-grid" data-columns="3">{sectionProjects.map((project) => <ProjectCard project={project} label={displayCategory(project.data.category, categoryLabels)} />)}</div> : <div class="site-surface p-8"><p class="site-copy">Nenhuma obra publicada para esta seção.</p></div>}</section>;
+    return <section class="site-shell site-section" aria-label={section.title || "Galeria de obras"}>{sectionHeader()}{sectionProjects.length ? <div class="site-grid" data-columns={columns}>{sectionProjects.map((project) => <ProjectCard project={project} label={displayCategory(project.data.category, categoryLabels)} />)}</div> : <div class="site-surface p-8"><p class="site-copy">Nenhuma obra publicada para esta seção.</p></div>}</section>;
   }
   if (section.type === "featured") {
     const selected = section.projects.length ? selectBySlug(projects, section.projects) : projects.filter((project) => project.data.featured).slice(0, section.limit);
-    return <section class="site-shell site-section" aria-label={section.title || "Obras em destaque"}>{sectionHeader()}{selected.length ? <div class="site-grid" data-columns="3">{selected.map((project) => <ProjectCard project={project} label={displayCategory(project.data.category, categoryLabels)} />)}</div> : <div class="site-surface p-8"><p class="site-copy">Selecione obras publicadas para esta seção.</p></div>}</section>;
+    return <section class="site-shell site-section" aria-label={section.title || "Obras em destaque"}>{sectionHeader()}{selected.length ? <div class="site-grid" data-columns={columns}>{selected.map((project) => <ProjectCard project={project} label={displayCategory(project.data.category, categoryLabels)} />)}</div> : <div class="site-surface p-8"><p class="site-copy">Selecione obras publicadas para esta seção.</p></div>}</section>;
   }
   if (section.type === "categories") {
     const items = selectedCategories(section.categories);
