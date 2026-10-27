@@ -2,30 +2,19 @@
 import { getCollection } from "astro:content";
 import "../styles/global.css";
 import "../styles/design-tokens.css";
-import { typographyStyle } from "../lib/design-system";
+import { siteCssText, visibleCategories } from "../lib/site-presentation";
 
 interface Props { title: string; description?: string; image?: string; }
 const { title, description = "Portfólio profissional de artes visuais.", image } = Astro.props;
 const site = await getCollection("site");
-const categories = (await getCollection("categories", ({ data }) => data.visible)).sort((left, right) => left.data.order - right.data.order || left.data.name.localeCompare(right.data.name, "pt-BR"));
+const categories = visibleCategories((await getCollection("categories")).map((category) => category.data));
 const themeEntry = site.find((item) => item.data.type === "theme");
 const aboutEntry = site.find((item) => item.data.type === "about");
 const theme = themeEntry?.data.type === "theme" ? themeEntry.data : undefined;
 const profile = aboutEntry?.data.type === "about" ? aboutEntry.data : undefined;
 const contactLink = theme?.showContactLink !== false ? profile?.links[0] : undefined;
 const socialLinks = [...(profile?.links ?? []), ...(theme?.footerLinks ?? [])].filter((link, index, all) => /insta|instagram/i.test(link.label) && link.url !== contactLink?.url && all.findIndex((candidate) => candidate.url === link.url) === index);
-const colors = theme?.colors;
-const typography = theme?.typography;
-const layout = theme?.layout;
-const components = theme?.components;
-const hero = typography ? typographyStyle(typography.hero) : undefined;
-const section = typography ? typographyStyle(typography.section) : undefined;
-const body = typography ? typographyStyle(typography.body) : undefined;
-const caption = typography ? typographyStyle(typography.caption) : undefined;
-const shadow = components?.shadow === "strong" ? "0 20px 45px rgb(0 0 0 / .18)" : components?.shadow === "none" ? "none" : "0 12px 30px rgb(24 24 27 / .10)";
-const tokenStyle = theme && colors && layout && components && hero && section && body && caption
-  ? `--color-bg:${colors.background};--color-surface:${colors.surface};--color-text:${colors.text};--color-muted:${colors.mutedText};--color-heading:${colors.heading};--color-link:${colors.link};--color-border:${colors.border};--color-button:${colors.button};--color-accent:${colors.accent};--layout-container:${layout.container}px;--layout-gutter:${layout.gutter}px;--layout-section-gap:${layout.sectionGap}px;--layout-card-gap:${layout.cardGap}px;--grid-mobile-columns:${layout.mobileColumns};--radius:${components.radius}px;--border-width:${components.borderWidth}px;--shadow:${shadow};--card-media-fit:${layout.coverFit};--font-hero:${hero.family};--font-section:${section.family};--font-body:${body.family};--font-caption:${caption.family};--size-hero:${hero.size};--weight-hero:${hero.weight};--leading-hero:${hero.lineHeight};--tracking-hero:${hero.tracking};--size-section:${section.size};--weight-section:${section.weight};--leading-section:${section.lineHeight};--tracking-section:${section.tracking};--size-body:${body.size};--weight-body:${body.weight};--leading-body:${body.lineHeight};--tracking-body:${body.tracking};--size-caption:${caption.size};--weight-caption:${caption.weight};--leading-caption:${caption.lineHeight};--tracking-caption:${caption.tracking};--about-width:${theme.aboutLayout.contentWidth}px;--portrait-size:${theme.aboutLayout.portraitSize}px;`
-  : "";
+const tokenStyle = theme ? siteCssText(theme) : "";
 ---
 <!doctype html>
 <html lang="pt-BR">
@@ -39,13 +28,13 @@ const tokenStyle = theme && colors && layout && components && hero && section &&
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
   </head>
-  <body style={tokenStyle} data-cover-fit={layout?.coverFit ?? "contain"} class="antialiased">
+  <body style={tokenStyle} data-cover-fit={theme?.layout.coverFit ?? "contain"} class="antialiased">
     <header class="border-b" style="border-color:var(--color-border);background:var(--color-bg)">
       <nav class="site-shell flex min-h-18 items-center justify-between gap-5 py-5" aria-label="Principal">
         <a class="font-semibold tracking-tight" style="color:var(--color-heading)" href="/">{profile?.artisticName ?? "Enzo Portfolio"}</a>
         <div class="flex items-center gap-5 text-sm">
           <a href="/#projetos">Home</a>
-          {categories.map((category) => <a data-category-link={category.data.slug} href={`/?categoria=${category.data.slug}`}>{category.data.name}</a>)}
+          {categories.map((category) => <a data-category-link={category.slug} href={`/?categoria=${category.slug}`}>{category.name}</a>)}
           <a href="/about">Sobre</a>
           {contactLink && <a class="hidden sm:inline" href={contactLink.url} target="_blank" rel="noreferrer">{contactLink.label}</a>}
           {socialLinks.map((link) => <a class="hidden sm:inline" href={link.url} target="_blank" rel="noreferrer">{link.label}</a>)}

@@ -14,6 +14,8 @@
     "pages:dev": "npm run build && wrangler pages dev dist",
     "test:design-system": "tsc tests/design-system.test.ts src/lib/design-system.ts --outDir .test-dist --module nodenext --moduleResolution nodenext --target es2022 --types node && node --test .test-dist/tests/design-system.test.js",
     "test:content-model": "tsc tests/content-model.test.ts src/lib/content-model.ts --outDir .test-dist --module nodenext --moduleResolution nodenext --target es2022 --types node && node --test .test-dist/tests/content-model.test.js",
+    "test:content-integrity": "tsc tests/content-integrity.test.ts src/lib/content-integrity.ts --outDir .test-dist --module nodenext --moduleResolution nodenext --target es2022 --types node && node --test .test-dist/tests/content-integrity.test.js",
+    "test:site-presentation": "tsc tests/site-presentation.test.ts src/lib/site-presentation.ts src/lib/design-system.ts --outDir .test-dist --module nodenext --moduleResolution nodenext --target es2022 --types node && node --test .test-dist/tests/site-presentation.test.js",
     "test:cms-config": "node tests/cms-config.test.mjs"
   },
   "dependencies": {

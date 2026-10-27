@@ -18,3 +18,11 @@ test("uses typed project media and relation-driven categories", () => {
   assert.equal(category.widget, "relation");
   assert.deepEqual(media.types.map((type) => type.name), ["image", "youtube", "gif", "vimeo"]);
 });
+
+test("protects category deletion and exposes native project organization controls", () => {
+  const projects = config.collections.find((collection) => collection.name === "projects");
+  const categories = config.collections.find((collection) => collection.name === "categories");
+  assert.equal(categories.delete, false);
+  assert.deepEqual(projects.view_filters.map((filter) => filter.field), ["published", "published"]);
+  assert.deepEqual(projects.view_groups, [{ label: "Por categoria", field: "category" }]);
+});

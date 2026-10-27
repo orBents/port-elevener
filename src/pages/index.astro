@@ -4,11 +4,14 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import HomeSections from "../components/HomeSections.astro";
 import ProjectCard from "../components/ProjectCard.astro";
 import { getPublishedProjects, getVisibleCategories } from "../lib/projects";
-import { displayCategory, missingCategoryReferences } from "../lib/content-model";
+import { displayCategory } from "../lib/content-model";
+import { assertContentIntegrity } from "../lib/content-integrity";
 
 const projects = await getPublishedProjects();
 const categories = await getVisibleCategories();
 const site = await getCollection("site");
+const allProjects = await getCollection("projects");
+const allCategories = await getCollection("categories");
 const about = site.find((entry) => entry.data.type === "about");
 const home = site.find((entry) => entry.data.type === "home");
 const theme = site.find((entry) => entry.data.type === "theme");
@@ -18,8 +21,11 @@ const settings = theme?.data.type === "theme" ? theme.data : undefined;
 const configuredSections = home?.data.type === "home" ? home.data.sections : [];
 const categoryLabels = new Map(categories.map((category) => [category.data.slug, category.data.name]));
 const columns = String(settings?.layout.columns ?? 3);
-const missingCategories = missingCategoryReferences(projects, categories);
-if (missingCategories.length) throw new Error(`Categorias ausentes para obras publicadas: ${missingCategories.join(", ")}. Crie ou restaure a categoria no painel.`);
+assertContentIntegrity({
+  categories: allCategories.map((category) => ({ slug: category.data.slug, name: category.data.name })),
+  projects: allProjects.map((project) => ({ slug: project.data.slug, title: project.data.title, category: project.data.category })),
+  homeSections: configuredSections,
+});
 ---
 <BaseLayout title={`${profile.artisticName} — ${profile.professionalTitle}`} description={profile.shortBio}>
   <section id="projetos" class="site-shell site-section" aria-labelledby="projects-title">
