@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { assertContentIntegrity, categoryChangeMessage, createIntegrityIssues, findCategoryDependencies, type ContentIntegritySnapshot } from "../src/lib/content-integrity.js";
+import { assertContentIntegrity, categoryChangeMessage, categoryDeleteMessage, createIntegrityIssues, findCategoryDependencies, type ContentIntegritySnapshot } from "../src/lib/content-integrity.js";
 
 const valid: ContentIntegritySnapshot = {
   categories: [{ slug: "animation", name: "Animações" }, { slug: "illustration", name: "Ilustrações" }],
@@ -45,4 +45,10 @@ test("allows a rename only after every reference was removed", () => {
     homeSections: [],
   };
   assert.equal(categoryChangeMessage(withoutReferences, "animation", "motion"), undefined);
+});
+
+test("allows deletion only when no project or Home section references the category", () => {
+  assert.match(categoryDeleteMessage(valid, "animation") ?? "", /Loop/);
+  assert.match(categoryDeleteMessage(valid, "animation") ?? "", /Página inicial/);
+  assert.equal(categoryDeleteMessage(valid, "illustration"), undefined);
 });

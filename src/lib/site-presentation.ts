@@ -18,7 +18,7 @@ export function normalizeTheme(theme: ThemeInput = {}) {
     },
     layout: { ...defaultLayout, ...(theme.layout || {}) },
     components: { ...defaultComponents, ...(theme.components || {}) },
-    aboutLayout: { contentWidth: 720, portraitSize: 160, ...(theme.aboutLayout || {}) },
+    aboutLayout: { contentWidth: 720, portraitSize: 360, portraitRadius: defaultComponents.radius, ...(theme.aboutLayout || {}) },
     showContactLink: theme.showContactLink !== false,
     showFooter: theme.showFooter !== false,
     footerText: theme.footerText || "",
@@ -84,6 +84,7 @@ export function siteCssVariables(rawTheme: ThemeInput = {}): Record<string, stri
     "--tracking-caption": caption.tracking,
     "--about-width": `${theme.aboutLayout.contentWidth}px`,
     "--portrait-size": `${theme.aboutLayout.portraitSize}px`,
+    "--portrait-radius": `${theme.aboutLayout.portraitRadius}px`,
   };
 }
 

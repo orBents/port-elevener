@@ -29,12 +29,10 @@ assertContentIntegrity({
 ---
 <BaseLayout title={`${profile.artisticName} — ${profile.professionalTitle}`} description={profile.shortBio}>
   <section id="projetos" class="site-shell site-section" aria-labelledby="projects-title">
-    <div class="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
-      <div>
-        <p class="site-caption text-xs font-bold uppercase tracking-[.17em]">Portfólio</p>
-        <h1 id="projects-title" class="site-heading mt-2">Obras</h1>
-      </div>
-    </div>
+    <header class="site-home-identity">
+      <p class="site-caption text-xs font-bold uppercase tracking-[.17em]">{profile.professionalTitle}</p>
+      <h1 id="projects-title" class="site-heading mt-2">{profile.artisticName}</h1>
+    </header>
     {projects.length ? <div id="project-grid" class="site-grid mt-10" data-columns={columns}>{projects.map((project) => <ProjectCard project={project} label={displayCategory(project.data.category, categoryLabels)} />)}</div> : <div class="site-surface mt-8 p-10"><p class="site-copy">As obras publicadas aparecerão aqui.</p></div>}
     <p id="filter-empty" class="site-copy mt-8" role="status" hidden>Nenhuma obra publicada nesta categoria.</p>
   </section>

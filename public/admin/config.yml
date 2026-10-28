@@ -1,5 +1,5 @@
 backend:
-  name: github
+  name: safe-github
   repo: orBents/port-elevener
   branch: main
   base_url: https://port-elevener.pages.dev
@@ -76,10 +76,10 @@ collections:
   - name: categories
     label: Categorias do menu
     label_singular: Categoria
-    description: "Categorias organizam as obras, os filtros da Home e os links do menu superior. Para preservar referências, a exclusão é desativada no painel."
+    description: "Categorias organizam as obras, os filtros da Home e os links do menu superior. A exclusão é bloqueada automaticamente se houver obras ou seções da Home vinculadas."
     folder: src/data/categories
     create: true
-    delete: false
+    delete: true
     slug: "{{fields.slug}}"
     extension: json
     format: json
@@ -212,6 +212,16 @@ collections:
           - { label: Experiências e trajetória, name: experience, widget: list, required: false, label_singular: "Experiência", summary: "{{fields.title}} · {{fields.period}}", collapsed: true, minimize_collapsed: true, fields: [{ label: Função ou marco, name: title, widget: string }, { label: Organização, name: organization, widget: string, required: false }, { label: Período, name: period, widget: string, required: false }, { label: Descrição, name: description, widget: text, required: false }] }
           - { label: Especialidades, name: specialties, widget: list, required: false, label_singular: "Especialidade", collapsed: true, minimize_collapsed: true, field: { label: Competência, name: specialty, widget: string } }
           - { label: Links e contato, name: links, widget: list, required: false, label_singular: "Link", summary: "{{fields.label}}", collapsed: true, minimize_collapsed: true, fields: [{ label: Nome, name: label, widget: string }, { label: URL, name: url, widget: string, pattern: ["^https?://", "Use https://"] }] }
+          - label: Contato direto
+            name: contacts
+            widget: object
+            collapsed: true
+            hint: "Opcional. O e-mail e o WhatsApp aparecem somente quando preenchidos; os controles abaixo definem a exibição no rodapé."
+            fields:
+              - { label: E-mail, name: email, widget: string, required: false, pattern: ["^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "Use um e-mail válido."] }
+              - { label: WhatsApp, name: whatsapp, widget: string, required: false, pattern: ["^[+0-9() .-]+$", "Use somente número, +, espaços, parênteses, ponto ou hífen."], hint: "Informe o número internacional. O site normaliza para o formato wa.me." }
+              - { label: Mostrar e-mail no rodapé, name: showEmailInFooter, widget: boolean, default: true }
+              - { label: Mostrar WhatsApp no rodapé, name: showWhatsAppInFooter, widget: boolean, default: true }
           - { label: Currículo em PDF, name: resume, widget: file, required: false, choose_url: false }
           - { label: Visibilidade das seções, name: sections, widget: object, collapsed: true, hint: "Opções avançadas: oculte uma seção sem apagar seus dados.", fields: [{ label: Formação, name: education, widget: boolean, default: true }, { label: Trajetória, name: experience, widget: boolean, default: true }, { label: Especialidades, name: specialties, widget: boolean, default: true }, { label: Links, name: links, widget: boolean, default: true }] }
 
@@ -264,7 +274,7 @@ collections:
               - { label: Espaço base entre seções, name: sectionGap, widget: number, min: 48, max: 160 }
               - { label: Margem lateral base, name: gutter, widget: number, min: 16, max: 64 }
           - { label: Bordas e sombras, name: components, widget: object, collapsed: true, fields: [{ label: Raio dos cantos, name: radius, widget: number, min: 0, max: 40 }, { label: Espessura das bordas, name: borderWidth, widget: number, min: 0, max: 3 }, { label: Sombra, name: shadow, widget: select, options: [none, soft, strong] }] }
-          - { label: Layout da página Sobre, name: aboutLayout, widget: object, collapsed: true, fields: [{ label: Largura do texto, name: contentWidth, widget: number, min: 560, max: 960 }, { label: Tamanho do retrato, name: portraitSize, widget: number, min: 96, max: 320 }] }
+          - { label: Layout da página Sobre, name: aboutLayout, widget: object, collapsed: true, fields: [{ label: Largura do texto, name: contentWidth, widget: number, min: 560, max: 960 }, { label: Largura máxima do retrato, name: portraitSize, widget: number, min: 96, max: 560 }, { label: Raio dos cantos do retrato, name: portraitRadius, widget: number, min: 0, max: 80, hint: "Independente do raio dos cards; use 0 para cantos retos." }] }
           - { label: Mostrar link de contato no topo, name: showContactLink, widget: boolean, default: true }
           - { label: Mostrar rodapé, name: showFooter, widget: boolean, default: true }
           - { label: Texto do rodapé, name: footerText, widget: string, required: false }

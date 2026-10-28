@@ -45,6 +45,7 @@ test("resolves labels, explicit selections and safe theme defaults", () => {
   assert.equal(variables["--grid-desktop-columns"], "2");
   assert.equal(variables["--card-thumbnail-ratio"], "auto");
   assert.equal(variables["--card-media-fit"], "contain");
+  assert.equal(variables["--portrait-radius"], "20px");
 });
 
 test("maps compact density and fixed thumbnails to safe grid tokens", () => {

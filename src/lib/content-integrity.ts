@@ -106,3 +106,15 @@ export function categoryChangeMessage(snapshot: ContentIntegritySnapshot, previo
   ].filter(Boolean).join(" ");
   return `Não é possível alterar o identificador da categoria "${previousSlug}" para "${nextSlug}" enquanto houver referências. ${details} Atualize essas referências primeiro.`;
 }
+
+export function categoryDeleteMessage(snapshot: ContentIntegritySnapshot, slug: string): string | undefined {
+  const dependencies = findCategoryDependencies(snapshot, slug);
+  if (!dependencies.length) return undefined;
+  const projects = dependencies.filter((dependency) => dependency.kind === "project").map((dependency) => dependency.label);
+  const home = dependencies.filter((dependency) => dependency.kind === "home").map((dependency) => dependency.label);
+  const details = [
+    projects.length ? `Obras: ${projects.join(", ")}.` : "",
+    home.length ? `Página inicial: ${home.join(", ")}.` : "",
+  ].filter(Boolean).join(" ");
+  return `Não é possível excluir a categoria "${slug}" enquanto houver referências. ${details} Atualize ou remova essas referências antes de excluir a categoria.`;
+}

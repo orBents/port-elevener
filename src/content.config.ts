@@ -1,6 +1,7 @@
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 import { contrastMessage, defaultColors, defaultComponents, defaultLayout, defaultTypography, hexPattern } from "./lib/design-system";
+import { normalizeWhatsApp } from "./lib/contact";
 
 const slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use letras minúsculas, números e hífens.");
 const urlOrPath = z.string().refine((value) => value.startsWith("/") || /^https?:\/\//.test(value), "Use uma URL pública ou um arquivo enviado pelo painel.");
@@ -12,6 +13,12 @@ const mediaItem = z.discriminatedUnion("type", [
   z.object({ type: z.literal("vimeo"), source: videoUrl, caption: z.string().optional() }),
 ]);
 const linkItem = z.object({ label: z.string().min(1), url: z.string().url() });
+const directContacts = z.object({
+  email: z.string().email("Use um e-mail válido.").optional(),
+  whatsapp: z.string().optional().refine((value) => !value || Boolean(normalizeWhatsApp(value)), "Use um número de WhatsApp internacional com 8 a 15 dígitos."),
+  showEmailInFooter: z.boolean().default(true),
+  showWhatsAppInFooter: z.boolean().default(true),
+}).default({});
 const hex = z.string().regex(hexPattern, "Use uma cor HEX no formato #RRGGBB.");
 const typeStyle = z.object({ family: z.enum(["sans", "serif", "mono"]), size: z.number().min(12).max(112), weight: z.number().int().min(300).max(800), lineHeight: z.number().min(0.9).max(2), letterSpacing: z.number().min(-0.1).max(0.2) });
 const sectionBase = { visible: z.boolean().default(true), title: z.string().max(120).optional(), eyebrow: z.string().max(80).optional(), alignment: z.enum(["start", "center"]).default("start") };
@@ -38,7 +45,7 @@ const categories = defineCollection({
 const siteSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("about"), artisticName: z.string().min(1), professionalTitle: z.string().min(1), profileImage: urlOrPath.optional(), shortBio: z.string().min(1), fullBio: z.string().optional(),
-    education: z.array(z.object({ title: z.string(), institution: z.string().optional(), year: z.string().optional() })).default([]), experience: z.array(z.object({ title: z.string(), organization: z.string().optional(), period: z.string().optional(), description: z.string().optional() })).default([]), specialties: z.array(z.string()).default([]), links: z.array(linkItem).default([]), resume: urlOrPath.optional(), sections: z.object({ education: z.boolean().default(true), experience: z.boolean().default(true), specialties: z.boolean().default(true), links: z.boolean().default(true) }).default({}),
+    education: z.array(z.object({ title: z.string(), institution: z.string().optional(), year: z.string().optional() })).default([]), experience: z.array(z.object({ title: z.string(), organization: z.string().optional(), period: z.string().optional(), description: z.string().optional() })).default([]), specialties: z.array(z.string()).default([]), links: z.array(linkItem).default([]), contacts: directContacts, resume: urlOrPath.optional(), sections: z.object({ education: z.boolean().default(true), experience: z.boolean().default(true), specialties: z.boolean().default(true), links: z.boolean().default(true) }).default({}),
   }),
   z.object({ type: z.literal("home"), sections: z.array(homeSection).default([]) }),
   z.object({
@@ -47,7 +54,7 @@ const siteSchema = z.discriminatedUnion("type", [
     typography: z.object({ hero: typeStyle.default(defaultTypography.hero), section: typeStyle.default(defaultTypography.section), body: typeStyle.default(defaultTypography.body), caption: typeStyle.default(defaultTypography.caption) }).default(defaultTypography),
     layout: z.object({ container: z.number().int().min(960).max(1600).default(defaultLayout.container), columns: z.number().int().min(1).max(4).default(defaultLayout.columns), mobileColumns: z.number().int().min(1).max(2).default(defaultLayout.mobileColumns), cardGap: z.number().int().min(12).max(48).default(defaultLayout.cardGap), sectionGap: z.number().int().min(48).max(160).default(defaultLayout.sectionGap), gutter: z.number().int().min(16).max(64).default(defaultLayout.gutter), coverFit: z.enum(["contain", "cover"]).default(defaultLayout.coverFit), thumbnailRatio: z.enum(["original", "square", "wide"]).default(defaultLayout.thumbnailRatio), density: z.enum(["compact", "comfortable"]).default(defaultLayout.density) }).default(defaultLayout),
     components: z.object({ radius: z.number().int().min(0).max(40).default(defaultComponents.radius), borderWidth: z.number().int().min(0).max(3).default(defaultComponents.borderWidth), shadow: z.enum(["none", "soft", "strong"]).default(defaultComponents.shadow) }).default(defaultComponents),
-    aboutLayout: z.object({ contentWidth: z.number().int().min(560).max(960).default(720), portraitSize: z.number().int().min(96).max(320).default(160) }).default({ contentWidth: 720, portraitSize: 160 }),
+    aboutLayout: z.object({ contentWidth: z.number().int().min(560).max(960).default(720), portraitSize: z.number().int().min(96).max(560).default(360), portraitRadius: z.number().int().min(0).max(80).default(defaultComponents.radius) }).default({ contentWidth: 720, portraitSize: 360, portraitRadius: defaultComponents.radius }),
     showContactLink: z.boolean().default(true), showFooter: z.boolean().default(true), footerText: z.string().optional(), footerLinks: z.array(linkItem).default([]),
     primaryColor: z.enum(["violet", "blue", "green", "orange", "rose"]).optional(), secondaryColor: z.enum(["slate", "stone", "zinc"]).optional(), background: z.enum(["light", "warm", "dark"]).optional(), font: z.enum(["system", "serif", "mono"]).optional(), galleryColumns: z.enum(["2", "3", "4"]).optional(), coverStyle: z.enum(["rounded", "square", "soft"]).optional(), spacing: z.enum(["compact", "comfortable", "generous"]).optional(), heroImage: urlOrPath.optional(),
   }),

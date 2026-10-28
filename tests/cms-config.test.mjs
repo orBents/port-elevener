@@ -19,13 +19,26 @@ test("uses typed project media and relation-driven categories", () => {
   assert.deepEqual(media.types.map((type) => type.name), ["image", "youtube", "gif", "vimeo"]);
 });
 
-test("protects category deletion and exposes native project organization controls", () => {
+test("uses the safe GitHub backend for guarded category deletion", () => {
   const projects = config.collections.find((collection) => collection.name === "projects");
   const categories = config.collections.find((collection) => collection.name === "categories");
-  assert.equal(categories.delete, false);
+  assert.equal(config.backend.name, "safe-github");
+  assert.equal(categories.delete, true);
   assert.deepEqual(projects.view_filters.map((filter) => filter.field), ["published", "published"]);
   assert.deepEqual(projects.view_groups, [{ label: "Por identificador de categoria", field: "category" }]);
   assert.match(projects.description, /identificador estável/i);
+});
+
+test("exposes optional direct contacts and an independent portrait radius", () => {
+  const about = config.collections.find((collection) => collection.name === "about");
+  const aboutFields = about.files[0].fields;
+  const contacts = aboutFields.find((field) => field.name === "contacts");
+  assert.deepEqual(contacts.fields.map((field) => field.name), ["email", "whatsapp", "showEmailInFooter", "showWhatsAppInFooter"]);
+
+  const appearance = config.collections.find((collection) => collection.name === "appearance");
+  const theme = appearance.files.find((file) => file.name === "appearance");
+  const aboutLayout = theme.fields.find((field) => field.name === "aboutLayout");
+  assert.deepEqual(aboutLayout.fields.map((field) => field.name), ["contentWidth", "portraitSize", "portraitRadius"]);
 });
 
 test("exposes one global grid control with responsive columns, thumbnails and density", () => {

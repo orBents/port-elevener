@@ -17,7 +17,9 @@
     "test:content-integrity": "tsc tests/content-integrity.test.ts src/lib/content-integrity.ts --outDir .test-dist --module nodenext --moduleResolution nodenext --target es2022 --types node && node --test .test-dist/tests/content-integrity.test.js",
     "test:site-presentation": "tsc tests/site-presentation.test.ts src/lib/site-presentation.ts src/lib/design-system.ts --outDir .test-dist --module nodenext --moduleResolution nodenext --target es2022 --types node && node --test .test-dist/tests/site-presentation.test.js",
     "test:cms-config": "node tests/cms-config.test.mjs",
-    "test:mobile-navigation": "node tests/mobile-navigation.test.mjs"
+    "test:mobile-navigation": "node tests/mobile-navigation.test.mjs",
+    "test:contact": "tsc tests/contact.test.ts src/lib/contact.ts --outDir .test-dist --module nodenext --moduleResolution nodenext --target es2022 --types node && node --test .test-dist/tests/contact.test.js",
+    "test:profile-presentation": "node tests/profile-presentation.test.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",

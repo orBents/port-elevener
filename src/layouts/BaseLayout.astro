@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import "../styles/global.css";
 import "../styles/design-tokens.css";
 import { categoryNavigationItems, siteCssText } from "../lib/site-presentation";
+import { directContactLinks } from "../lib/contact";
 
 interface Props { title: string; description?: string; image?: string; }
 interface NavigationItem { key: string; label: string; href: string; category?: string; external?: boolean; }
@@ -15,6 +16,9 @@ const theme = themeEntry?.data.type === "theme" ? themeEntry.data : undefined;
 const profile = aboutEntry?.data.type === "about" ? aboutEntry.data : undefined;
 const contactLink = theme?.showContactLink !== false ? profile?.links[0] : undefined;
 const socialLinks = [...(profile?.links ?? []), ...(theme?.footerLinks ?? [])].filter((link, index, all) => /insta|instagram/i.test(link.label) && link.url !== contactLink?.url && all.findIndex((candidate) => candidate.url === link.url) === index);
+const configuredFooterLinks = theme?.footerLinks.length ? theme.footerLinks.filter((link) => !/insta|instagram/i.test(link.label)) : (profile?.links ?? []);
+const footerLinks = [...configuredFooterLinks.map((link) => ({ label: link.label, href: link.url, external: true })), ...directContactLinks(profile?.contacts, true)]
+  .filter((link, index, all) => all.findIndex((candidate) => candidate.href === link.href) === index);
 const tokenStyle = theme ? siteCssText(theme) : "";
 const navigationItems: NavigationItem[] = [
   { key: "home", label: "Home", href: "/#projetos" },
@@ -56,7 +60,7 @@ const navigationItems: NavigationItem[] = [
       </aside>
     </div>
     <main><slot /></main>
-    {theme?.showFooter !== false && <footer class="site-shell border-t py-10 text-sm" style="border-color:var(--color-border);color:var(--color-muted)"><div class="flex flex-wrap items-center justify-between gap-4"><span>{theme?.footerText || profile?.professionalTitle || "Portfólio"}</span>{theme?.footerLinks.length ? <ul class="flex flex-wrap gap-4">{theme.footerLinks.filter((link) => !/insta|instagram/i.test(link.label)).map((link) => <li><a class="underline underline-offset-4" href={link.url} target="_blank" rel="noreferrer">{link.label}</a></li>)}</ul> : profile?.links.length ? <ul class="flex flex-wrap gap-4">{profile.links.map((link) => <li><a class="underline underline-offset-4" href={link.url} target="_blank" rel="noreferrer">{link.label}</a></li>)}</ul> : null}</div></footer>}
+    {theme?.showFooter !== false && <footer class="site-shell border-t py-10 text-sm" style="border-color:var(--color-border);color:var(--color-muted)"><div class="flex flex-wrap items-center justify-between gap-4"><span>{theme?.footerText || profile?.professionalTitle || "Portfólio"}</span>{footerLinks.length ? <ul class="flex flex-wrap gap-4">{footerLinks.map((link) => <li><a class="underline underline-offset-4" href={link.href} target={link.external ? "_blank" : undefined} rel={link.external ? "noreferrer" : undefined}>{link.label}</a></li>)}</ul> : null}</div></footer>}
   </body>
 </html>
 <script>
