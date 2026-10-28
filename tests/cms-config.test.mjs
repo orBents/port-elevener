@@ -24,7 +24,8 @@ test("protects category deletion and exposes native project organization control
   const categories = config.collections.find((collection) => collection.name === "categories");
   assert.equal(categories.delete, false);
   assert.deepEqual(projects.view_filters.map((filter) => filter.field), ["published", "published"]);
-  assert.deepEqual(projects.view_groups, [{ label: "Por categoria", field: "category" }]);
+  assert.deepEqual(projects.view_groups, [{ label: "Por identificador de categoria", field: "category" }]);
+  assert.match(projects.description, /identificador estável/i);
 });
 
 test("exposes one global grid control with responsive columns, thumbnails and density", () => {

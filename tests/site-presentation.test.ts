@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { categoryLabel, normalizeTheme, publishedProjects, selectedProjects, siteCssVariables, visibleCategories } from "../src/lib/site-presentation.js";
+import { categoryLabel, categoryNavigationItems, normalizeTheme, publishedProjects, selectedProjects, siteCssVariables, visibleCategories } from "../src/lib/site-presentation.js";
 
 test("uses the same ordering rules for visible categories and published works", () => {
   const categories = visibleCategories([
@@ -16,6 +16,18 @@ test("uses the same ordering rules for visible categories and published works", 
     { slug: "draft", published: false, order: 0, publishedAt: "2027-01-01" },
   ]);
   assert.deepEqual(projects.map((project) => project.slug), ["first", "later"]);
+});
+
+test("builds mobile and desktop category links from the same visible category source", () => {
+  const links = categoryNavigationItems([
+    { slug: "hidden", name: "Oculta", order: 0, visible: false },
+    { slug: "sketchbook", name: "Sketchbooks", order: 30, visible: true },
+    { slug: "animation", name: "Animações", order: 10, visible: true },
+  ]);
+  assert.deepEqual(links, [
+    { key: "category-animation", label: "Animações", href: "/?categoria=animation", category: "animation" },
+    { key: "category-sketchbook", label: "Sketchbooks", href: "/?categoria=sketchbook", category: "sketchbook" },
+  ]);
 });
 
 test("resolves labels, explicit selections and safe theme defaults", () => {

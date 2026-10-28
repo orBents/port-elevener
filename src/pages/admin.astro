@@ -80,7 +80,7 @@ const serializedPreviewSnapshot = JSON.stringify(previewSnapshot).replace(/</g, 
         const links = Array.isArray(profile.links) ? profile.links : [];
         const contactLink = theme.showContactLink ? links[0] : undefined;
         const socialLinks = [...links, ...theme.footerLinks].filter((link, index, all) => /insta|instagram/i.test(link.label) && link.url !== contactLink?.url && all.findIndex((candidate) => candidate.url === link.url) === index);
-        return h("header", { className: "enzo-preview__header" }, h("span", { className: "enzo-preview__brand" }, profile.artisticName || "Nome artístico não informado"), h("nav", { "aria-label": "Navegação de prévia" }, h("span", {}, "Home"), ...previewCategories().map((category) => h("span", { key: category.slug }, category.name)), h("span", {}, "Sobre"), contactLink && h("span", {}, contactLink.label), ...socialLinks.map((link) => h("span", { key: link.url }, link.label))));
+        return h("header", { className: "enzo-preview__header" }, h("span", { className: "enzo-preview__brand" }, profile.artisticName || "Nome artístico não informado"), h("nav", { "aria-label": "Navegação de prévia" }, h("span", {}, "Home"), ...previewCategories().map((category) => h("span", { key: category.slug }, category.name)), h("span", {}, "Sobre"), contactLink && h("span", {}, contactLink.label), ...socialLinks.map((link) => h("span", { key: link.url }, link.label))), h("span", { className: "enzo-preview__menu-toggle", "aria-label": "Menu móvel" }, "☰"));
       };
       const previewFooter = (profile, rawTheme) => {
         const theme = normalizeTheme(rawTheme);

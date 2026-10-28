@@ -12,7 +12,7 @@ collections:
   - name: projects
     label: Obras
     label_singular: Obra
-    description: "Cadastre e organize cada obra, sua capa, galeria e vídeos."
+    description: "Cadastre e organize cada obra, sua capa, galeria e vídeos. O agrupamento nativo usa o identificador estável da categoria; o seletor de Categoria mostra o nome visível."
     folder: src/data/projects
     create: true
     delete: true
@@ -28,7 +28,7 @@ collections:
       - { label: "Publicadas", field: published, pattern: true }
       - { label: "Não publicadas", field: published, pattern: false }
     view_groups:
-      - { label: "Por categoria", field: category }
+      - { label: "Por identificador de categoria", field: category }
     fields:
       - { label: Título da obra, name: title, widget: string, hint: "Nome público do projeto." }
       - { label: Endereço da obra, name: slug, widget: string, pattern: ["^[a-z0-9]+(?:-[a-z0-9]+)*$", "Use letras minúsculas, números e hífens."], hint: "Não altere depois de publicar: o endereço público será atualizado." }

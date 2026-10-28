@@ -2,12 +2,13 @@
 import { getCollection } from "astro:content";
 import "../styles/global.css";
 import "../styles/design-tokens.css";
-import { siteCssText, visibleCategories } from "../lib/site-presentation";
+import { categoryNavigationItems, siteCssText } from "../lib/site-presentation";
 
 interface Props { title: string; description?: string; image?: string; }
+interface NavigationItem { key: string; label: string; href: string; category?: string; external?: boolean; }
 const { title, description = "Portfólio profissional de artes visuais.", image } = Astro.props;
 const site = await getCollection("site");
-const categories = visibleCategories((await getCollection("categories")).map((category) => category.data));
+const categories = (await getCollection("categories")).map((category) => category.data);
 const themeEntry = site.find((item) => item.data.type === "theme");
 const aboutEntry = site.find((item) => item.data.type === "about");
 const theme = themeEntry?.data.type === "theme" ? themeEntry.data : undefined;
@@ -15,6 +16,13 @@ const profile = aboutEntry?.data.type === "about" ? aboutEntry.data : undefined;
 const contactLink = theme?.showContactLink !== false ? profile?.links[0] : undefined;
 const socialLinks = [...(profile?.links ?? []), ...(theme?.footerLinks ?? [])].filter((link, index, all) => /insta|instagram/i.test(link.label) && link.url !== contactLink?.url && all.findIndex((candidate) => candidate.url === link.url) === index);
 const tokenStyle = theme ? siteCssText(theme) : "";
+const navigationItems: NavigationItem[] = [
+  { key: "home", label: "Home", href: "/#projetos" },
+  ...categoryNavigationItems(categories),
+  { key: "about", label: "Sobre", href: "/about" },
+  ...(contactLink ? [{ key: `contact-${contactLink.url}`, label: contactLink.label, href: contactLink.url, external: true }] : []),
+  ...socialLinks.map((link) => ({ key: `social-${link.url}`, label: link.label, href: link.url, external: true })),
+];
 ---
 <!doctype html>
 <html lang="pt-BR">
@@ -29,19 +37,62 @@ const tokenStyle = theme ? siteCssText(theme) : "";
     <title>{title}</title>
   </head>
   <body style={tokenStyle} data-cover-fit={theme?.layout.coverFit ?? "contain"} data-thumbnail-ratio={theme?.layout.thumbnailRatio ?? "original"} class="antialiased">
-    <header class="border-b" style="border-color:var(--color-border);background:var(--color-bg)">
-      <nav class="site-shell flex min-h-18 items-center justify-between gap-5 py-5" aria-label="Principal">
+    <header class="site-header border-b" style="border-color:var(--color-border);background:var(--color-bg)">
+      <nav class="site-shell site-navigation" aria-label="Principal">
         <a class="font-semibold tracking-tight" style="color:var(--color-heading)" href="/">{profile?.artisticName ?? "Enzo Portfolio"}</a>
-        <div class="flex items-center gap-5 text-sm">
-          <a href="/#projetos">Home</a>
-          {categories.map((category) => <a data-category-link={category.slug} href={`/?categoria=${category.slug}`}>{category.name}</a>)}
-          <a href="/about">Sobre</a>
-          {contactLink && <a class="hidden sm:inline" href={contactLink.url} target="_blank" rel="noreferrer">{contactLink.label}</a>}
-          {socialLinks.map((link) => <a class="hidden sm:inline" href={link.url} target="_blank" rel="noreferrer">{link.label}</a>)}
+        <div class="site-navigation__links" data-navigation-links>
+          {navigationItems.map((item) => <a data-category-link={item.category} href={item.href} target={item.external ? "_blank" : undefined} rel={item.external ? "noreferrer" : undefined}>{item.label}</a>)}
         </div>
+        <button class="site-menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-navigation" data-menu-toggle><span class="sr-only">Abrir menu</span><span aria-hidden="true" class="site-menu-toggle__icon"></span></button>
       </nav>
     </header>
+    <div id="mobile-navigation" class="site-drawer" data-menu-drawer hidden>
+      <button class="site-drawer__backdrop" type="button" tabindex="-1" aria-label="Fechar menu" data-menu-close></button>
+      <aside class="site-drawer__panel" role="dialog" aria-modal="true" aria-labelledby="mobile-navigation-title">
+        <div class="site-drawer__heading"><strong id="mobile-navigation-title">Navegação</strong><button type="button" class="site-drawer__close" data-menu-close><span class="sr-only">Fechar menu</span><span aria-hidden="true">×</span></button></div>
+        <nav class="site-drawer__links" aria-label="Navegação móvel">
+          {navigationItems.map((item) => <a data-category-link={item.category} href={item.href} target={item.external ? "_blank" : undefined} rel={item.external ? "noreferrer" : undefined}>{item.label}</a>)}
+        </nav>
+      </aside>
+    </div>
     <main><slot /></main>
     {theme?.showFooter !== false && <footer class="site-shell border-t py-10 text-sm" style="border-color:var(--color-border);color:var(--color-muted)"><div class="flex flex-wrap items-center justify-between gap-4"><span>{theme?.footerText || profile?.professionalTitle || "Portfólio"}</span>{theme?.footerLinks.length ? <ul class="flex flex-wrap gap-4">{theme.footerLinks.filter((link) => !/insta|instagram/i.test(link.label)).map((link) => <li><a class="underline underline-offset-4" href={link.url} target="_blank" rel="noreferrer">{link.label}</a></li>)}</ul> : profile?.links.length ? <ul class="flex flex-wrap gap-4">{profile.links.map((link) => <li><a class="underline underline-offset-4" href={link.url} target="_blank" rel="noreferrer">{link.label}</a></li>)}</ul> : null}</div></footer>}
   </body>
 </html>
+<script>
+  const menuToggle = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
+  const menuDrawer = document.querySelector<HTMLElement>("[data-menu-drawer]");
+  const closeButtons = [...document.querySelectorAll<HTMLButtonElement>("[data-menu-close]")];
+  let lastFocusedElement: HTMLElement | null = null;
+  const focusableSelector = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  const focusableElements = () => menuDrawer ? [...menuDrawer.querySelectorAll<HTMLElement>(focusableSelector)].filter((element) => !element.hasAttribute("disabled")) : [];
+  const closeMenu = (restoreFocus = true) => {
+    if (!menuDrawer || menuDrawer.hidden) return;
+    menuDrawer.hidden = true;
+    document.body.classList.remove("has-navigation-overlay");
+    menuToggle?.setAttribute("aria-expanded", "false");
+    if (restoreFocus) lastFocusedElement?.focus();
+  };
+  const openMenu = () => {
+    if (!menuDrawer || !menuToggle) return;
+    lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : menuToggle;
+    menuDrawer.hidden = false;
+    document.body.classList.add("has-navigation-overlay");
+    menuToggle.setAttribute("aria-expanded", "true");
+    window.requestAnimationFrame(() => focusableElements()[0]?.focus());
+  };
+  menuToggle?.addEventListener("click", () => menuDrawer?.hidden ? openMenu() : closeMenu());
+  closeButtons.forEach((button) => button.addEventListener("click", () => closeMenu()));
+  menuDrawer?.querySelectorAll<HTMLAnchorElement>("a").forEach((link) => link.addEventListener("click", () => closeMenu(false)));
+  document.addEventListener("keydown", (event) => {
+    if (!menuDrawer || menuDrawer.hidden) return;
+    if (event.key === "Escape") { event.preventDefault(); closeMenu(); return; }
+    if (event.key !== "Tab") return;
+    const elements = focusableElements();
+    if (!elements.length) return;
+    const first = elements[0];
+    const last = elements[elements.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  });
+</script>

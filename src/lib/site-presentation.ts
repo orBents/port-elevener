@@ -97,6 +97,16 @@ export function visibleCategories<T extends CategoryLike>(categories: T[]): T[] 
     .sort((left, right) => (left.order ?? 0) - (right.order ?? 0) || left.name.localeCompare(right.name, "pt-BR"));
 }
 
+/** Fonte única para a navegação pública de categorias, em desktop e mobile. */
+export function categoryNavigationItems<T extends CategoryLike>(categories: T[]) {
+  return visibleCategories(categories).map((category) => ({
+    key: `category-${category.slug}`,
+    label: category.name,
+    href: `/?categoria=${encodeURIComponent(category.slug)}`,
+    category: category.slug,
+  }));
+}
+
 export function publishedProjects<T extends ProjectLike>(projects: T[]): T[] {
   return projects
     .filter((project) => project.published)
